@@ -145,7 +145,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:background="@android:color/transparent"
-            android:text="Limpiar"
+            android:text="Reiniciar"
             android:textColor="@color/colorPrimary"
             app:layout_constraintStart_toStartOf="parent"
             tools:layout_editor_absoluteY="0dp" />

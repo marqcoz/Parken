@@ -52,6 +52,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -147,7 +148,7 @@ public class ZonaParkenActivity extends AppCompatActivity implements OnMapReadyC
                 //actParken.activityParken.finish();
                 Intent parken = new Intent(ZonaParkenActivity.this,ParkenActivity.class).setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 parken.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                parken.putExtra("Activity", "ZonaParkenActivity");
+                parken.putExtra("Activity", ParkenActivity.ACTIVITY_ZONA_PARKEN);
                 parken.putExtra("zonasParkenJson", zonaParkenJson);
                 parken.putExtra("espacioParkenRequested",true);
                 parken.putExtra("latitudDestino", latitudDestino);
@@ -292,9 +293,15 @@ public class ZonaParkenActivity extends AppCompatActivity implements OnMapReadyC
                 //Log.d("Coordenadas"+i,String.valueOf(targetNorthEast.latitude)+", "+String.valueOf(targetNorthEast.longitude));
                 //Log.d("Coordenadas"+i,String.valueOf(targetSouthWest.latitude)+", "+String.valueOf(targetSouthWest.longitude));
 
-
+                String num = jsonArray.getJSONObject(i).getString("precio");
+                double finalPrecio = Double.parseDouble(num);
+                DecimalFormat df = new DecimalFormat("#.00");
                 mMap.addMarker(new MarkerOptions().position(destination).title(jsonArray.getJSONObject(i).getString("nombre"))
-                        .snippet("Precio: "+"Cargando..."))
+                        //.snippet("Precio: "+"Cargando..."))
+
+                        .snippet("Precio: $"+  df.format(finalPrecio)))
+
+
                         //"$"+jsonArray.getJSONObject(i).getString("precio")+"MXN"))
                         .setIcon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_parken));
             }
@@ -536,14 +543,17 @@ public class ZonaParkenActivity extends AppCompatActivity implements OnMapReadyC
 
     @Override
     public void onBackPressed() {
+        /*
         Intent parken = new Intent(ZonaParkenActivity.this,ParkenActivity.class);
+
         parken.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         parken.putExtra("Activity", "ZonaParkenActivity");
         parken.putExtra("espacioParkenRequested",false);
         finish();
         //actParken.activityParken.finish();
         startActivity(parken);
-        //super.onBackPressed();
+        */
+        super.onBackPressed();
     }
 
 

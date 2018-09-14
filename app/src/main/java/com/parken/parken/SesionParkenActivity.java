@@ -57,10 +57,14 @@ public class SesionParkenActivity extends AppCompatActivity {
 
     private static final String PAYPAL_CLIENT = "Ae5YnMlrCaIo7Gl622Cvyb7r8eOEhQweVjxuvvxxVhJCbfZgtH4LLDOshoDQe_LO2iClRoMQID_YcOwW";
     private static final int PAYPAL_REQUEST_CODE = 7171;
-    public static final String CURRENCY = "USD";
+    public static final String CURRENCY = "MXN";
     //public static final String CURRENCY = "MXN";
     public static final String ACTIVITY_PARKEN = "ParkenActivity";
     public static final String ACTIVITY_SESION = "SesionParkenActivity";
+    public static final String LABEL_SELECT_CAR = "Selecciona un vehículo...";
+    public static final String LABEL_SELECT_TIME = "Selecciona...";
+
+    public int estatus;
 
 
 
@@ -148,6 +152,7 @@ public class SesionParkenActivity extends AppCompatActivity {
     String strDate;
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private String idEspacioParken;
+    private String addressEspacioParken;
     private String idSesionParken;
     private String espacioParkenJson;
     public CharSequence idVehiculo;
@@ -161,6 +166,7 @@ public class SesionParkenActivity extends AppCompatActivity {
     private String carro;
 
     public static SesionParkenActivity activitySesionParken;
+    public static PaymentActivity activityPaypal;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -218,6 +224,10 @@ public class SesionParkenActivity extends AppCompatActivity {
         startService(intent);
 
         cargarDatos();
+        if(estatus == ParkenActivity.LOAD){
+            establecerVistaPagando(session.infoId(), idSesionParken);
+        }
+
         //iniciarTimer();
 
         //sendCar(session.infoId());
@@ -262,7 +272,7 @@ public class SesionParkenActivity extends AppCompatActivity {
                                 int segu;
                                 Calendar d;
                                 Log.d("onDataSet", dat);
-                                if(txtHora.getText().toString().equals("Selecciona...")){
+                                if(txtHora.getText().toString().equals(LABEL_SELECT_TIME)){
                                     Log.d("onDataSet", "NoFecha");
                                     d = new GregorianCalendar(year,monthOfYear,dayOfMonth);
                                     segu = 2;
@@ -283,7 +293,7 @@ public class SesionParkenActivity extends AppCompatActivity {
                                     selectedMonth = monthOfYear;
                                     selectedYear = year;
                                     //Validación hora seleccionada
-                                    if(txtHora.getText().toString().equals("Selecciona...") || textVehiculo.getText().toString().equals("Selecciona un vehículo...")){
+                                    if(txtHora.getText().toString().equals(LABEL_SELECT_TIME) || textVehiculo.getText().toString().equals(LABEL_SELECT_CAR)){
                                     }else{
                                         activarOpciones(1);
                                     }
@@ -358,7 +368,7 @@ public class SesionParkenActivity extends AppCompatActivity {
                                         selectedHour = hourOfDay;
                                         selectedMin = minute;
                                         //Validación hora seleccionada
-                                        if (textVehiculo.getText().toString().equals("Selecciona un vehículo...")) {
+                                        if (textVehiculo.getText().toString().equals(LABEL_SELECT_CAR)) {
                                         } else {
                                             activarOpciones(1);
                                         }
@@ -392,8 +402,17 @@ public class SesionParkenActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if(origin.equals(ACTIVITY_PARKEN)){
+
                     //Verificar que el vehiculo seleccionado este disponible
-                    verificarDisponiblidadVehiculo(String.valueOf(idVehiculo));
+                    if(!textVehiculo.getText().equals(LABEL_SELECT_CAR)){
+
+                        verificarDisponiblidadVehiculo(String.valueOf(idVehiculo));
+
+                    }else{
+
+                        dialogSelectCar().show();
+                    }
+
                 }else{
                     payAttempt();
                 }
@@ -406,6 +425,7 @@ public class SesionParkenActivity extends AppCompatActivity {
                 if(origin.equals(ACTIVITY_PARKEN)){
                     dialogCancelPago().show();
                 }else {
+
                     finish();
                 }
 
@@ -414,6 +434,7 @@ public class SesionParkenActivity extends AppCompatActivity {
 
 
     }
+
 
     private void processPayment() {
         PayPalPayment paypalPayment = new PayPalPayment(new BigDecimal(precioFinal),
@@ -480,7 +501,7 @@ public class SesionParkenActivity extends AppCompatActivity {
             }
 
             //if(txtHora.getText().toString().equals("Selecciona...")){
-            if(txtTiempo.getText().toString().equals("Selecciona...")){
+            if(txtTiempo.getText().toString().equals(LABEL_SELECT_TIME)){
             }else{
                 activarOpciones(1);
             }
@@ -544,6 +565,52 @@ public class SesionParkenActivity extends AppCompatActivity {
         fRequestQueue.add(jsArrayRequest);
     }
 
+    private void establecerVistaPagando(String automovilista, String idSesion) {
+
+        HashMap<String, String> parametros = new HashMap();
+        parametros.put("idAutomovilista", automovilista);
+        parametros.put("idSesion", idSesion);
+
+        JsonObjectRequest jsArrayRequest = new JsonObjectRequest(
+                Request.Method.POST,
+                Jeison.URL_DRIVER_REFRESHING_VIEW_PAY,
+                new JSONObject(parametros),
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response){
+
+                        showProgress(false);
+                        try {
+                            if(response.getString("success").equals("1")){
+
+                            } else{
+                                dialogError().show();
+
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            dialogError().show();
+                        }
+
+                        return;
+                    }
+                },
+
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+
+                        showProgress(false);
+                        dialogError().show();
+
+                        return;
+                    }
+                });
+
+        fRequestQueue.add(jsArrayRequest);
+    }
+
+
     public void verificarDisponiblidadVehiculo(String idVehiculo){
 
         HashMap<String, String> parametros = new HashMap();
@@ -564,7 +631,7 @@ public class SesionParkenActivity extends AppCompatActivity {
                                 payAttempt();
                             } else{
                                 dialogCarBusy().show();
-                                textVehiculo.setText("Selecciona un vehículo...");
+                                textVehiculo.setText(LABEL_SELECT_CAR);
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -633,6 +700,7 @@ public class SesionParkenActivity extends AppCompatActivity {
                                     parken.putExtra("Activity", ParkenActivity.ACTIVITY_SESION_PARKEN);
                                     parken.putExtra("ActivityStatus", ParkenActivity.MESSAGE_PAY_SUCCESS);
                                     parken.putExtra("idSesionParken", idSesionParken);
+                                    parken.putExtra("DireccionEP", addressEspacioParken);
                                     parken.putExtra("FechaFinal", fechaFinal);
                                     parken.putExtra("Monto", monto);
                                     parken.putExtra("TiempoEnMinutos", Integer.parseInt(tiempo));
@@ -745,7 +813,7 @@ public class SesionParkenActivity extends AppCompatActivity {
                             Intent intent = new Intent(SesionParkenActivity.this, AddVehiculoActivity.class);
                             intent.putExtra("origin", "SesionParkenActivity");
                             startActivity(intent);
-                            textVehiculo.setText("Selecciona un vehículo...");
+                            textVehiculo.setText(LABEL_SELECT_CAR);
 
                         }else  {
                             textVehiculo.setText(vehiculos[which]);
@@ -881,7 +949,7 @@ public class SesionParkenActivity extends AppCompatActivity {
         clearTime.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                h.setText("");
+                h.setText("0");
                 m.setText("5");
             }
         });
@@ -909,7 +977,7 @@ public class SesionParkenActivity extends AppCompatActivity {
 
                 txtTiempo.setText(obtenerTiempoString(min));
 
-                if(!textVehiculo.getText().toString().equals("Selecciona...")){
+                if(!textVehiculo.getText().toString().equals(LABEL_SELECT_CAR)){
                     activarOpciones(1);
                 }
                 Log.d("MyTimerPicker", String.valueOf(min));
@@ -937,12 +1005,29 @@ public class SesionParkenActivity extends AppCompatActivity {
         return builder.create();
     }
 
+    public AlertDialog dialogSelectCar() {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Selecciona un vehículo")
+                //.setMessage("El vehículo seleccionado se encuentra en una sesión Parken. Selecciona otro.")
+                .setPositiveButton("OK",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
+
+        return builder.create();
+    }
+
+
     public AlertDialog dialogCancelPago() {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Cancelar Pago")
                 .setMessage("¿Deseas cancelar el pago de tu sesión Parken? Tu espacio asignado se liberará.")
-                .setNegativeButton("NO", new DialogInterface.OnClickListener() {
+                .setNegativeButton("CANCELAR", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.cancel();
@@ -952,6 +1037,14 @@ public class SesionParkenActivity extends AppCompatActivity {
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
+                                //Se llama al metodo cancelarEspacioParkenBooked(REPORT)
+                                timerTask.cancel(true);
+                                parken = new Intent(SesionParkenActivity.this, ParkenActivity.class);
+                                parken.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                parken.putExtra("Activity", ParkenActivity.ACTIVITY_SESION_PARKEN);
+                                parken.putExtra("ActivityStatus", ParkenActivity.MESSAGE_PAY_CANCELED);
+                                startActivity(parken);
+                                //Pero no se como llamar al intent
                                 finish();
                             }
                         });
@@ -989,54 +1082,6 @@ public class SesionParkenActivity extends AppCompatActivity {
         return builder.create();
     }
 
-    public AlertDialog dialogTimeOut() {
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-
-
-        builder.setTitle("Tiempo excedido")
-                .setMessage("No efectuaste tu pago a tiempo. Por favor desaloja el espacio Parken.")
-                .setPositiveButton("OK",
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                finish();
-                                Intent dialogIntent = new Intent(getApplicationContext(), ParkenActivity.class);
-                                dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                dialogIntent.putExtra("Activity", ParkenActivity.ACTIVITY_SESION_PARKEN);
-                                dialogIntent.putExtra("ActivityStatus", ParkenActivity.MESSAGE_PAY_FAILED);
-                                Log.d("Activity", ParkenActivity.MESSAGE_PAY_FAILED);
-                                startActivity(dialogIntent);
-                            }
-                        })
-                .setOnCancelListener(new DialogInterface.OnCancelListener() {
-                    @Override
-                    public void onCancel(DialogInterface dialog) {
-                        finish();
-                        Intent dialogIntent = new Intent(getApplicationContext(), ParkenActivity.class);
-                        dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        dialogIntent.putExtra("Activity", ParkenActivity.ACTIVITY_SESION_PARKEN);
-                        dialogIntent.putExtra("ActivityStatus", ParkenActivity.MESSAGE_PAY_FAILED);
-                        Log.d("Activity", ParkenActivity.MESSAGE_PAY_FAILED);
-                        startActivity(dialogIntent);
-
-                    }
-                })
-                .setOnDismissListener(new DialogInterface.OnDismissListener() {
-                    @Override
-                    public void onDismiss(DialogInterface dialog) {
-                        finish();
-                        Intent dialogIntent = new Intent(getApplicationContext(), ParkenActivity.class);
-                        dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        dialogIntent.putExtra("Activity", ParkenActivity.ACTIVITY_SESION_PARKEN);
-                        dialogIntent.putExtra("ActivityStatus", ParkenActivity.MESSAGE_PAY_FAILED);
-                        Log.d("Activity", ParkenActivity.MESSAGE_PAY_FAILED);
-                        startActivity(dialogIntent);
-                    }
-                });
-
-        return builder.create();
-    }
 
     public AlertDialog dialogWrongCalendar(int opc) {
         String m;
@@ -1379,6 +1424,9 @@ public class SesionParkenActivity extends AppCompatActivity {
 
     public  void cargarDatos(){
 
+        int minutos = ParkenActivity.minutoTimerPago;
+        int segundos = ParkenActivity.segundoTimerPago;
+
         Intent intent = getIntent();
         if (null != intent) {
             origin = intent.getStringExtra("Activity");
@@ -1396,12 +1444,18 @@ public class SesionParkenActivity extends AppCompatActivity {
             if(cuentaPayPal!=null)
             Log.d("CargarDatos", cuentaPayPal);
 
+            minutos = intent.getIntExtra("minRestante", 4);
+            segundos = intent.getIntExtra("segRestante", 59);
+
+            estatus = intent.getIntExtra("ActivityExtra", ParkenActivity.LOAD);
+
 
 
             if(espacioParkenJson!=null){
             try {
                 JSONObject jsonArray = new JSONObject(espacioParkenJson);
                 idEspacioParken = jsonArray.getString("id");
+                addressEspacioParken = jsonArray.getString("direccion");
 
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -1415,18 +1469,21 @@ public class SesionParkenActivity extends AppCompatActivity {
 
         //origin = ACTIVITY_SESION;
         if(origin.equals(ACTIVITY_PARKEN)){
-            timerTask.execute();
-            _dialog = dialogTimeAlert();
-            _dialog.show();
+            timerTask.execute(minutos, segundos);
+            if(estatus == ParkenActivity.LOAD){
+                _dialog = dialogTimeAlert();
+                _dialog.show();
+            }
+
             //txtEspacioParken.setText(String.valueOf(session.getParkenSpace()));
             txtEspacioParken.setText(idEspacioParken);
-            textVehiculo.setText("Selecciona un vehículo...");
+            textVehiculo.setText(LABEL_SELECT_CAR);
             //Obtener la fecha actual
             selectedYear = obtenerFechaNow(2).get(Calendar.YEAR);
             selectedMonth = obtenerFechaNow(2).get(Calendar.MONTH);
             selectedDay= obtenerFechaNow(2).get(Calendar.DAY_OF_MONTH);
 
-            txtTiempo.setText("Selecciona...");
+            txtTiempo.setText(LABEL_SELECT_TIME);
 
             //txtFecha.setText(selectedDay+" "+obtenerMesNombre(selectedMonth+1)+", "+selectedYear);
             calendarFechaFinalFija = new GregorianCalendar(selectedYear,selectedMonth,selectedDay, 0,0);
@@ -1506,7 +1563,7 @@ public class SesionParkenActivity extends AppCompatActivity {
             String lastHour = String.valueOf(selectedHour) + ":" + min + " hrs";
 
             //txtHora.setText("Selecciona...");
-            txtTiempo.setText("Selecciona...");
+            txtTiempo.setText(LABEL_SELECT_TIME);
             pay.setEnabled(false);
             pay.setText("Renovar sesión Parken");
             pay.setBackgroundColor(Color.parseColor("#757575"));
@@ -1650,21 +1707,24 @@ public class SesionParkenActivity extends AppCompatActivity {
 
             try {
 
-                for(int j = 4; j >= 0 ; j--){
-                for(int i = 59; i >=0; i--){
-                    //for(int i = 3; i >=0; i--){
+                int x = params[0];
+                int y = params[1];
 
 
+                for(int j = x; j >= 0 ; j--){
+                    for(int i = y; i >=0; i--){
+                        //for(int i = 3; i >=0; i--){
 
-                    Thread.currentThread();
-                    Thread.sleep(1000);
-                    if(!isCancelled())
-                        publishProgress(i,j);
-                    else break;
+                        Thread.currentThread();
+                        Thread.sleep(1000);
+                        if(!isCancelled())
+                            publishProgress(i,j);
+                        else break;
 
 
-                }
+                    }
 
+                    y = 59;
                 }
 
             } catch (InterruptedException e) {
@@ -1676,8 +1736,10 @@ public class SesionParkenActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(final Boolean success) {
+            //activityPaypal.finish();
+            //activityPaypal.isDestroyed();
+            noPayRecevied();
 
-            dialogTimeOut().show();
         }
 
         @Override
@@ -1685,6 +1747,19 @@ public class SesionParkenActivity extends AppCompatActivity {
             cancel(true);
 
         }
+    }
+
+
+    private void noPayRecevied() {
+
+        finish();
+        Intent dialogIntent = new Intent(getApplicationContext(), ParkenActivity.class);
+        dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        dialogIntent.putExtra("Activity", ParkenActivity.ACTIVITY_SESION_PARKEN);
+        dialogIntent.putExtra("ActivityStatus", ParkenActivity.MESSAGE_PAY_FAILED);
+        Log.d("Activity", ParkenActivity.MESSAGE_PAY_FAILED);
+        startActivity(dialogIntent);
+
     }
 
 
@@ -1729,6 +1804,7 @@ public class SesionParkenActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         stopService(new Intent(this, PayPalService.class));
+        timerTask.cancel(true);
         super.onDestroy();
     }
 

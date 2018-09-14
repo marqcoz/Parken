@@ -7,10 +7,17 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.google.android.gms.location.Geofence;
+import com.google.android.gms.location.GeofencingRequest;
+import com.google.android.gms.maps.model.LatLng;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created by marcos on 21/03/18.
@@ -21,14 +28,14 @@ public class Jeison {
     //public static String URL_BASE_POST = "http://192.168.1.70:3000/automovilista/sigIn";
     public static final String YOUR_API_KEY = "AIzaSyA15TKW11TMeC60Kmoq4cqgRYryvRsGDQI";
     //public static final String IP = "192.168.1.123";
-    //public static final String IP = "192.168.200.41";
+    public static final String IP = "192.168.200.28";
     //public static final String IP = "192.168.15.33";
-    //public static final String IP = "192.168.1.91";
+    //public static final String IP = "192.168.1.88";
     //public static final String IP = "192.168.1.111";
     //public static final String IP = "10.4.132.31";
     //public static final String IP = "100.87.199.16";
     //public static final String IP = "10.100.126.239";
-    public static final String IP = "192.168.43.236";
+    //public static final String IP = "192.168.43.236";
     //public static final String IP = "10.0.172.141";
 
 
@@ -58,9 +65,11 @@ public class Jeison {
     public static final String URL_DRIVER_DEACIVATE_SESSION_PARKEN = URL_BASE + "/automovilista/desactivarSesionParken";
     public static final String URL_DRIVER_CREATE_REPORT = URL_BASE + "/automovilista/crearReporte";
     public static final String URL_DRIVER_DELETE_SESSION = URL_BASE + "/automovilista/eliminarSesionParken";
+    public static final String URL_DRIVER_GETTING_VIEW = URL_BASE + "/automovilista/obtenerVistaDelServer";
+    public static final String URL_DRIVER_REFRESHING_VIEW_PAY = URL_BASE + "/automovilista/establecerVistaPagando";
     public static final String URL_TOKEN = URL_BASE + "/actualizarToken";
     public static String URL_BASE_POST = "http://192.168.1.70:3000/login";
-    public static final String URL_GET_DIRECTION = "https://maps.googleapis.com/maps/api/geocode/json?address=~ADDRESS~&key="+YOUR_API_KEY;
+    public static final String URL_GET_DIRECTION = "https://maps.googleapis.com/maps/api/geocode/json?address=~ADDRESS~&key=";//+YOUR_API_KEY;
     //https://maps.googleapis.com/maps/api/geocode/json?address=NEPTUNO&key=AIzaSyA15TKW11TMeC60Kmoq4cqgRYryvRsGDQI
     public static final String URL_GET_LATLNG = "https://maps.googleapis.com/maps/api/geocode/json?latlng=~LNG,~LAT&key="+ YOUR_API_KEY;
     protected RequestQueue fRequestQueue;
@@ -70,4 +79,3 @@ public class Jeison {
 
     public static final String SOCKET_FIND_PARKEN_SPACE = "buscar espacio parken";
 }
-

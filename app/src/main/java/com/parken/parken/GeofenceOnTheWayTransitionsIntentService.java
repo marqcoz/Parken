@@ -27,6 +27,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import static android.support.v4.app.NotificationCompat.PRIORITY_MAX;
+
 
 public class GeofenceOnTheWayTransitionsIntentService extends IntentService {
 
@@ -67,7 +69,7 @@ public class GeofenceOnTheWayTransitionsIntentService extends IntentService {
             String geofenceTransitionDetails = getGeofenceTrasitionDetails(geoFenceTransition, triggeringGeofences );
 
             // Send notification details as a String
-            sendNotification( geofenceTransitionDetails );
+            //sendNotification( geofenceTransitionDetails );
 
             if(geoFenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER){
                 actParken = new ParkenActivity();
@@ -75,11 +77,8 @@ public class GeofenceOnTheWayTransitionsIntentService extends IntentService {
                 volley = VolleySingleton.getInstance(getApplicationContext());
                 fRequestQueue = volley.getRequestQueue();
 
-                /*
-                buscarEspacioParken(String.valueOf(session.getLatDestino()),
-                        String.valueOf(session.getLngDestino()),
-                        ParkenActivity.METHOD_PARKEN_SPACE_BOOKED);
-                        */
+
+                //Método para buscar el espacio Parken disponible y apartar el espacio
                 buscarEspacioParken(String.valueOf(ParkenActivity.latitudDestino),
                         String.valueOf(ParkenActivity.longitudDestino),
                         ParkenActivity.METHOD_PARKEN_SPACE_BOOKED);
@@ -117,7 +116,8 @@ public class GeofenceOnTheWayTransitionsIntentService extends IntentService {
         return status + TextUtils.join( ", ", triggeringGeofencesList);
     }
 
-    private void sendNotification( String msg ) {
+    private void sendNotification(String msg, JSONObject data ) {
+
         Log.i(TAG, "sendNotification: " + msg );
 
         // Intent to start the main Activity
@@ -127,7 +127,11 @@ public class GeofenceOnTheWayTransitionsIntentService extends IntentService {
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
         stackBuilder.addParentStack(ParkenActivity.class);
         stackBuilder.addNextIntent(notificationIntent);
-        PendingIntent notificationPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent notificationPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_ONE_SHOT);
+
+        Intent i = new Intent(this, ParkenActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, i,PendingIntent.FLAG_UPDATE_CURRENT);
+
 
 
         // Creating and sending Notification
@@ -135,21 +139,29 @@ public class GeofenceOnTheWayTransitionsIntentService extends IntentService {
                 (NotificationManager) getSystemService( Context.NOTIFICATION_SERVICE );
         notificatioMng.notify(
                 GEOFENCE_ON_THE_WAY_NOTIFICATION_ID,
-                createNotification(msg, notificationPendingIntent));
+                createNotification(msg, data, pendingIntent));
 
     }
 
     // Create notification
-    private Notification createNotification(String msg, PendingIntent notificationPendingIntent) {
+    private Notification createNotification(String msg, JSONObject data,  PendingIntent notificationPendingIntent) {
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this);
-        notificationBuilder
-                .setSmallIcon(R.mipmap.ic_launcher)
-                //.setColor(Color.RED)
-                .setContentTitle(msg)
-                .setContentText("Entrando a la geocerca")
-                .setContentIntent(notificationPendingIntent)
-                .setDefaults(Notification.DEFAULT_LIGHTS | Notification.DEFAULT_VIBRATE | Notification.DEFAULT_SOUND)
-                .setAutoCancel(true);
+        try {
+            notificationBuilder
+                    .setSmallIcon(R.mipmap.ic_launcher)
+                    //.setColor(Color.RED)
+                    .setContentTitle(msg)
+                    .setContentText("Dirígete al espacio Parken " + data.getString("id"))
+                    .setContentIntent(notificationPendingIntent)
+                    .addAction(0,"Navegar", notificationPendingIntent)
+                    .addAction(0,"Cancelar", notificationPendingIntent)
+                    .setDefaults(Notification.DEFAULT_LIGHTS | Notification.DEFAULT_VIBRATE | Notification.DEFAULT_SOUND)
+                    .setPriority(NotificationManager.IMPORTANCE_HIGH)
+                    .setAutoCancel(true);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
         return notificationBuilder.build();
     }
 
@@ -261,7 +273,7 @@ public class GeofenceOnTheWayTransitionsIntentService extends IntentService {
                                 Log.d("EspacioParken", response.toString());
 
                                 //actParken.setParkenSpaceBooked(Integer.parseInt(jsonObject.getString("id")), jsonObject.toString());
-                                sendNotification("Espacio Parken Reservado!");
+                                //sendNotification("Espacio Parken reservado", jsonObject);
 
                                 dialogIntent.putExtra("ActivityStatus", ParkenActivity.MESSAGE_EP_BOOKED);
                                 dialogIntent.putExtra("idEspacioParkenAsignado", jsonObject.getString("id"));
@@ -316,9 +328,4 @@ public class GeofenceOnTheWayTransitionsIntentService extends IntentService {
 
         fRequestQueue.add(jsArrayRequest);
     }
-
-
-
-
 }
-

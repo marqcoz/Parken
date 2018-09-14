@@ -3,6 +3,7 @@ package com.parken.parken;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
@@ -28,6 +29,24 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         notificatioMng.notify(
                 12,
         createNotification(remoteMessage.getNotification().getBody()));
+
+        if(remoteMessage.getNotification().getBody().equals("No llegaste a tiempo")){
+
+            Intent dialogIntent = new Intent(getApplicationContext(), ParkenActivity.class);
+            dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            dialogIntent.putExtra("Activity", ParkenActivity.NOTIFICATIONS);
+            dialogIntent.putExtra("ActivityStatus", ParkenActivity.NOTIFICATION_EP_BOOKED_CANCELED);
+            startActivity(dialogIntent);
+        }
+
+        if(remoteMessage.getNotification().getBody().equals("TEST")){
+
+            Intent dialogIntent = new Intent(getApplicationContext(), ParkenActivity.class);
+            dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            dialogIntent.putExtra("Activity", "TEST");
+            dialogIntent.putExtra("ActivityStatus", ParkenActivity.NOTIFICATION_EP_BOOKED_CANCELED);
+            startActivity(dialogIntent);
+        }
     }
 
     // Create notification
