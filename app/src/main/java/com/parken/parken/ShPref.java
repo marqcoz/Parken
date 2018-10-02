@@ -124,6 +124,29 @@ public class ShPref {
         editor.commit();
     }
 
+    public void setDriving(boolean e){
+        editor.putBoolean("DRIVING", e);
+        editor.commit();
+    }
+
+
+    public void setEntering(boolean e){
+        editor.putBoolean("ENTERING", e);
+        editor.commit();
+    }
+
+
+    public void setExiting(boolean e){
+        editor.putBoolean("EXITING", e);
+        editor.commit();
+    }
+
+
+    public void setDwelling(boolean e){
+        editor.putBoolean("DWELLING", e);
+        editor.commit();
+    }
+
     //public String getVista(){ return prefs.getString("vista", ParkenActivity.VIEW_PARKEN);}
 
     public boolean getCancel(){ return prefs.getBoolean("onCancel", true); }
@@ -161,6 +184,23 @@ public class ShPref {
         double latitud = Double.parseDouble(prefs.getString("latitudDestino","0.0"));
         return latitud;
     }
+
+    public boolean getDriving(){
+        return prefs.getBoolean("DRIVING", false);
+    }
+
+    public boolean getEntering(){
+        return prefs.getBoolean("ENTERING", false);
+    }
+
+    public boolean getExiting(){
+        return prefs.getBoolean("EXITING", false);
+    }
+
+    public boolean getDwelLing(){
+        return prefs.getBoolean("DWELLING", false);
+    }
+
 
     public int getParkenSpace(){
         return prefs.getInt("espacioParkenAsignado", 0);

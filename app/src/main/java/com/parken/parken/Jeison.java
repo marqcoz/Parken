@@ -24,13 +24,15 @@ import java.util.List;
  */
 
 public class Jeison {
-
+    //Clave antigua
     //public static String URL_BASE_POST = "http://192.168.1.70:3000/automovilista/sigIn";
-    public static final String YOUR_API_KEY = "AIzaSyA15TKW11TMeC60Kmoq4cqgRYryvRsGDQI";
+    //public static final String YOUR_API_KEY = "AIzaSyA15TKW11TMeC60Kmoq4cqgRYryvRsGDQI";
+    public static final String YOUR_API_KEY = "AIzaSyDkmiXSeUvTkbXgV7UYpwmhiysqkrjqcZ0";
+
     //public static final String IP = "192.168.1.123";
     public static final String IP = "192.168.200.28";
     //public static final String IP = "192.168.15.33";
-    //public static final String IP = "192.168.1.88";
+    //public static final String IP = "192.168.1.91";
     //public static final String IP = "192.168.1.111";
     //public static final String IP = "10.4.132.31";
     //public static final String IP = "100.87.199.16";
@@ -62,15 +64,16 @@ public class Jeison {
     public static final String URL_DRIVER_UPDATE_TICKET = URL_BASE + "/automovilista/pagarSancion";
     public static final String URL_DRIVER_PARKEN_SESSION = URL_BASE + "/automovilista/obtenerSesionesParken";
     public static final String URL_DRIVER_ACIVATE_SESSION_PARKEN = URL_BASE + "/automovilista/activarSesionParken";
-    public static final String URL_DRIVER_DEACIVATE_SESSION_PARKEN = URL_BASE + "/automovilista/desactivarSesionParken";
+    public static final String URL_DRIVER_MODIFY_SESSION_PARKEN = URL_BASE + "/automovilista/modificarSesionParken";
     public static final String URL_DRIVER_CREATE_REPORT = URL_BASE + "/automovilista/crearReporte";
     public static final String URL_DRIVER_DELETE_SESSION = URL_BASE + "/automovilista/eliminarSesionParken";
     public static final String URL_DRIVER_GETTING_VIEW = URL_BASE + "/automovilista/obtenerVistaDelServer";
+    public static final String URL_DRIVER_GETTING_VALUES= URL_BASE + "/automovilista/obtenerValoresDelServer";
     public static final String URL_DRIVER_REFRESHING_VIEW_PAY = URL_BASE + "/automovilista/establecerVistaPagando";
     public static final String URL_TOKEN = URL_BASE + "/actualizarToken";
     public static String URL_BASE_POST = "http://192.168.1.70:3000/login";
-    public static final String URL_GET_DIRECTION = "https://maps.googleapis.com/maps/api/geocode/json?address=~ADDRESS~&key=";//+YOUR_API_KEY;
-    //https://maps.googleapis.com/maps/api/geocode/json?address=NEPTUNO&key=AIzaSyA15TKW11TMeC60Kmoq4cqgRYryvRsGDQI
+    public static final String URL_GET_DIRECTION = "https://maps.googleapis.com/maps/api/geocode/json?address=~ADDRESS~&key=" + YOUR_API_KEY;
+    //public static final String URL_GET_DIRECTION = "https://maps.googleapis.com/maps/api/geocode/json?address=NEPTUNO&key=AIzaSyA15TKW11TMeC60Kmoq4cqgRYryvRsGDQI";
     public static final String URL_GET_LATLNG = "https://maps.googleapis.com/maps/api/geocode/json?latlng=~LNG,~LAT&key="+ YOUR_API_KEY;
     protected RequestQueue fRequestQueue;
     public String obj;

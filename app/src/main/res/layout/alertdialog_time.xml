@@ -27,10 +27,10 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/textView7"
+        android:id="@+id/txtTimeMin"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="(el tiempo mínimo es de 5 minutos)"
+        android:text="(el tiempo mínimo)"
         android:textAlignment="center"
         android:textColor="@android:color/black"
         app:layout_constraintEnd_toEndOf="parent"
@@ -45,7 +45,7 @@
         android:paddingTop="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView7">
+        app:layout_constraintTop_toBottomOf="@+id/txtTimeMin">
 
 
         <EditText

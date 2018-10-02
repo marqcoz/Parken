@@ -7,6 +7,7 @@
     <uses-permission android:name="android.permission.EXPAND_STATUS_BAR" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION"/>
 
     <application
         android:allowBackup="true"
@@ -120,6 +121,7 @@
 
         <service android:name=".GeofenceParkenBookedTransitionsIntentService" />
         <service android:name=".GeofenceOnTheWayTransitionsIntentService" />
+        <service android:name=".GeofenceParkenSessionIntentService"/>
         <service android:name=".MyFirebaseInstanceIDService">
             <intent-filter>
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
@@ -130,6 +132,7 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
+        <service android:name=".ActivityRecognizedService" />
 
         <activity
             android:name=".SocketActivity"

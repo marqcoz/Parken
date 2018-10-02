@@ -136,7 +136,7 @@ public class SesionParkenActivity extends AppCompatActivity {
     private int selectedMin;
 
     Double precioParken = 5.0;
-    Float valorPuntos = 1f;
+    public static Float valorPuntos = 1f;
 
     boolean horaReinicida = false;
 
@@ -164,6 +164,8 @@ public class SesionParkenActivity extends AppCompatActivity {
     private String cuentaPayPal;
     private String origin;
     private String carro;
+    private int minMinParken;
+    private int minMinPago;
 
     public static SesionParkenActivity activitySesionParken;
     public static PaymentActivity activityPaypal;
@@ -385,8 +387,7 @@ public class SesionParkenActivity extends AppCompatActivity {
         tiempo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-             dialogTimerPicker(0).show();
+             dialogTimerPicker(minMinParken).show();
 
             }
         });
@@ -730,11 +731,13 @@ public class SesionParkenActivity extends AppCompatActivity {
                             } else{
                                     dialogError().show();
                             }
+                            return;
                         } catch (JSONException e) {
                             e.printStackTrace();
+                            return;
                         }
 
-                        return;
+
                     }
                 },
                 new Response.ErrorListener() {
@@ -777,11 +780,13 @@ public class SesionParkenActivity extends AppCompatActivity {
                             } else{
 
                             }
+                            return;
                         } catch (JSONException e) {
                             e.printStackTrace();
+                            return;
                         }
 
-                        return;
+
                     }
                 },
                 new Response.ErrorListener() {
@@ -886,16 +891,20 @@ public class SesionParkenActivity extends AppCompatActivity {
         final EditText h = v.findViewById(R.id.editTextHoras);
         final EditText m = v.findViewById(R.id.editTextMinutos);
 
+        TextView tm = v.findViewById(R.id.txtTimeMin);
+
         Button establecer = v.findViewById(R.id.btnEstablecerTiempo);
         Button clearTime= v.findViewById(R.id.btnClearTime);
 
         String horas = String.valueOf(minParken/60);
         String minutos;
         if((minParken)%60 == 0){
-            minutos = "5";
+            minutos = obtenerTiempoString((long)minParken);
         } else{
             minutos = String.valueOf((minParken)%60);
         }
+
+        tm.setText("El tiempo mínimo es de " + obtenerTiempoString((long)minParken));
 
         h.setText(horas);
         m.setText(minutos);
@@ -950,7 +959,7 @@ public class SesionParkenActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 h.setText("0");
-                m.setText("5");
+                m.setText(String.valueOf(minMinParken));
             }
         });
 
@@ -966,8 +975,8 @@ public class SesionParkenActivity extends AppCompatActivity {
 
                 int auxInt = Integer.parseInt(m.getText().toString());
 
-                if(auxInt < 5 && h.getText().toString().equals("0")){
-                    m.setText("5");
+                if(auxInt < minMinParken && h.getText().toString().equals("0")){
+                    m.setText(String.valueOf(minMinParken));
                 }
 
                 int min = ( Integer.parseInt( h.getText().toString() )*60 ) + Integer.parseInt(m.getText().toString());
@@ -1105,7 +1114,7 @@ public class SesionParkenActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
         builder.setTitle("¡Atención!")
-                .setMessage("Tiene 5 minutos para efectuar su pago, de lo contrario deberá liberar el espacio Parken o será acreedor a una sanción.")
+                .setMessage("Tienes " + obtenerTiempoString((long)minMinPago) + " para efectuar su pago, de lo contrario deberá liberar el espacio Parken o será acreedor a una sanción.")
                 .setPositiveButton("OK",
                         new DialogInterface.OnClickListener() {
                             @Override
@@ -1427,6 +1436,16 @@ public class SesionParkenActivity extends AppCompatActivity {
         int minutos = ParkenActivity.minutoTimerPago;
         int segundos = ParkenActivity.segundoTimerPago;
 
+        if(ParkenActivity.segundoTimerTolerance == 59)
+            minMinParken = ParkenActivity.minutoTimerTolerance + 1;
+        else
+            minMinParken = ParkenActivity.minutoTimerTolerance;
+
+        if(ParkenActivity.segundoTimerPago == 59)
+            minMinPago = ParkenActivity.minutoTimerPago + 1;
+        else
+            minMinPago = ParkenActivity.minutoTimerPago;
+
         Intent intent = getIntent();
         if (null != intent) {
             origin = intent.getStringExtra("Activity");
@@ -1527,7 +1546,7 @@ public class SesionParkenActivity extends AppCompatActivity {
                 calendarFechaFinal.setTime(sdf.parse(intent.getStringExtra("FechaFinal")));
                 calendarFechaFinalFija.clear();
                 calendarFechaFinalFija.setTime(sdf.parse(intent.getStringExtra("FechaFinal")));
-                calendarFechaFinalFija.add(Calendar.MINUTE,5);
+                calendarFechaFinalFija.add(Calendar.MINUTE,minMinParken);
             } catch (ParseException e) {
                 e.printStackTrace();
 
@@ -1537,7 +1556,7 @@ public class SesionParkenActivity extends AppCompatActivity {
                 //PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
             }
 
-            calendarFechaFinal.add(Calendar.MINUTE, 5);
+            calendarFechaFinal.add(Calendar.MINUTE, minMinParken);
 
 
             //Obtener la fecha final de la sesion pasada
