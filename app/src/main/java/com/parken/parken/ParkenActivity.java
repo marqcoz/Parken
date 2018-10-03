@@ -179,6 +179,7 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
     public static final String PARKEN_LOAD = "ParkenLoading";
     public static final String ACTIVITY_ZONA_PARKEN = "ZonaParkenActivity";
     public static final String ACTIVITY_SESION_PARKEN = "SesionParkenActivity";
+    public static final String ACTIVITY_PAY_RECEIPT = "SancionPagoActivity";
     public static final String METHOD_ON_LOCATION_CHANGED = "onLocationChanged";
     public static final String INTENT_GEOFENCE_ON_THE_WAY = "GeofenceOnTheWay";
     public static final String INTENT_GEOFENCE_PARKEN_BOOKED = "GeofenceParkenBooked";
@@ -234,8 +235,10 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
     private Button cancelar;
     private Button renovar;
     private Button finalizar;
+    private Button payReceipt;
 
     private ConstraintLayout profile;
+    private ConstraintLayout alertReceipt;
 
     private View mProgressView;
     private View mParkenFormView;
@@ -252,6 +255,7 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
 
     private String zonaParkenJson;
     private String espacioParkenJson;
+    private String sancionJson;
     private String idSesionParken;
     private String fechaFinal;
     private String montoFinal;
@@ -490,12 +494,16 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
         renovar = findViewById(R.id.btnRenovar);
         finalizar = findViewById(R.id.btnFinalizar);
 
+        payReceipt = findViewById(R.id.btnPayReceipt);
+
         mParkenFormView = findViewById(R.id.map_form);
         mProgressView = findViewById(R.id.parken_progress);
         infoLay = findViewById(R.id.InfoLayout);
         //declareElements();
 
         alertLay = findViewById(R.id.AlertLayout);
+
+        alertReceipt = findViewById(R.id.AlertReceiptLayout);
 
         txtEstatusEParken = findViewById(R.id.textViewEstatusEspacioParken);
         txtDireccionEParken = findViewById(R.id.textViewDireccionEspacioParken);
@@ -670,6 +678,22 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
                 dialogFinishParken().show();
             }
         });
+
+        /*
+        Botón PAGAR SANCION
+        Al presionar el botón de PAGAR SANCION
+        Se mostrará el formulario para pagar la sanción nueva
+         */
+        payReceipt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                pagarSancion(sancionJson);
+
+            }
+        });
+
+
 
         /*
         Botón PERFIL
@@ -914,6 +938,14 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
                     } catch (ParseException e) {
                         e.printStackTrace();
                     }
+
+                    break;
+
+                case VIEW_PARKEN_REPORT:
+
+                    sancionJson = data.toString();
+
+                    parkenNewReceipt();
 
                     break;
 
@@ -1542,7 +1574,16 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
 
     }
 
-    public void parkenReport(){
+    public void parkenNewReceipt(){
+
+        //Cargamos el mapa
+        readyMap();
+        //Bloqueamos el botón de búsqueda de zonas Parken
+        //Siempre que haya una sanción no se podrá solicitar un espacio Parken
+        find.setVisibility(View.GONE);
+
+        //Mostramos la alerta de una sanción pendiente
+        alertReceipt.setVisibility(View.VISIBLE);
 
     }
 
@@ -2318,6 +2359,32 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
         }
     }
 
+    public void pagarSancion(String sancionJSON){
+
+        try {
+
+            JSONObject sancion = new JSONObject(sancionJSON);
+
+            //Log.d("sancion", sancionJSON);
+
+
+            Intent sancionPago = new Intent(ParkenActivity.this, SancionPagoActivity.class);
+            sancionPago.putExtra("espacioParken", sancion.getInt("idEspacioParken"));
+            sancionPago.putExtra("idSancion", sancion.getInt("idSancion"));
+            sancionPago.putExtra("zonaParken", sancion.getString("NombreZonaParken"));
+            sancionPago.putExtra("ubicacion", sancion.getString("DireccionEspacioParken"));
+            sancionPago.putExtra("modeloVehiculo", sancion.getString("ModeloVehiculo"));
+            sancionPago.putExtra("placaVehiculo", sancion.getString("PlacaVehiculo"));
+            sancionPago.putExtra("tiempo", sancion.getString("Fecha")+ " " + sancion.getString("Hora"));
+            sancionPago.putExtra("monto",(float)sancion.getDouble("Monto"));
+            sancionPago.putExtra("origin", "Parken");
+            startActivity(sancionPago);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void setParkenSpaceBooked(int ep, String jsonEP){
         session = new ShPref(activityParken);
         session.setParkenSpace(ep);
@@ -2366,6 +2433,8 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
         cancelar.setVisibility(View.INVISIBLE);
         renovar.setVisibility(View.INVISIBLE);
         finalizar.setVisibility(View.INVISIBLE);
+
+        alertReceipt.setVisibility(View.GONE);
     }
 
 
@@ -4148,6 +4217,12 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
                             }
                         }
                         break;
+                    case ACTIVITY_PAY_RECEIPT:
+
+                        dialogPaySuccessful().show();
+                        obtenerVistaDelServer(session.infoId());
+
+                        break;
 
                     case NOTIFICATIONS:
 
@@ -4187,6 +4262,9 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
                         ENTERING = true;
                         EXITING = true;
                         DRIVING = true;
+                        session.setDriving(true);
+                        session.setEntering(true);
+                        session.setExiting(true);
 
                         break;
 
@@ -4296,8 +4374,8 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
         int id = item.getItemId();
 
         if (id == R.id.nav_pay_sanction) {
-            finish();
-            startActivity(new Intent(ParkenActivity.this,SesionParkenActivity.class));
+            //finish();
+            startActivity(new Intent(ParkenActivity.this,SancionPagoActivity.class));
         } else if (id == R.id.nav_cars) {
             startActivity(new Intent(ParkenActivity.this,VehiculoActivity.class));
         } else if (id == R.id.nav_pays) {
@@ -4505,6 +4583,23 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
 
         return builder.create();
     }
+
+    public AlertDialog dialogPaySuccessful() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        builder.setTitle("Pago exitoso")
+                .setMessage("En unos minutos un supervisor retirará el inmovilizador de tu vehículo.")
+                .setPositiveButton("OK",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
+
+        return builder.create();
+    }
+
 
 
     public AlertDialog dialogTimerPicker(final int minutosParken) {

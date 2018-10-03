@@ -114,7 +114,9 @@
             android:name=".SesionActivity"
             android:label="Sesiones Parken"
             android:parentActivityName=".ParkenActivity"
-            android:theme="@style/AppTheme"></activity>
+            android:theme="@style/AppTheme">
+        </activity>
+
         <activity
             android:name=".PasswordActivity"
             android:parentActivityName=".EditProfileActivity" />

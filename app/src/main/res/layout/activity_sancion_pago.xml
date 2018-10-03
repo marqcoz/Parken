@@ -8,32 +8,40 @@
 
     <android.support.design.widget.AppBarLayout
         android:id="@+id/appbar"
-        android:layout_height="192dp"
         android:layout_width="match_parent"
+        android:layout_height="120dp"
         android:theme="@style/AppTheme.AppBarOverlay">
 
         <android.support.design.widget.CollapsingToolbarLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:toolbarId="@+id/toolbar"
             app:layout_scrollFlags="scroll|exitUntilCollapsed"
+            app:toolbarId="@+id/toolbar"
+            app:expandedTitleTextAppearance="@android:style/TextAppearance.Material.WindowTitle"
             app:contentScrim="?attr/colorPrimary">
 
             <android.support.v7.widget.Toolbar
                 android:id="@+id/toolbar"
-                android:layout_height="?attr/actionBarSize"
                 android:layout_width="match_parent"
-                app:popupTheme="@style/AppTheme.PopupOverlay"
-                app:layout_collapseMode="pin">
+                android:layout_height="?attr/actionBarSize"
+                app:layout_collapseMode="pin"
+                app:popupTheme="@style/AppTheme.PopupOverlay">
 
             </android.support.v7.widget.Toolbar>
 
         </android.support.design.widget.CollapsingToolbarLayout>
+
+
     </android.support.design.widget.AppBarLayout>
 
     <android.support.v4.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:clipToPadding="true"
+        android:fillViewport="true"
+        android:fitsSystemWindows="false"
+        android:addStatesFromChildren="true"
+        android:overScrollMode="always"
         app:layout_behavior="android.support.design.widget.AppBarLayout$ScrollingViewBehavior">
 
         <android.support.constraint.ConstraintLayout
@@ -43,11 +51,11 @@
 
             <LinearLayout
                 android:id="@+id/sesion_form"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 app:layout_constraintTop_toTopOf="@+id/appBarLayout"
-                tools:layout_editor_absoluteX="0dp">
+                tools:layout_editor_absoluteX="3dp">
 
 
                 <android.support.constraint.ConstraintLayout
@@ -55,6 +63,54 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="0dp">
 
+
+                    <android.support.constraint.ConstraintLayout
+                        android:id="@+id/constraintUbicacion"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHorizontal_bias="0.0"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/constraintZP">
+
+                        <TextView
+                            android:id="@+id/textViewUbicacion"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp"
+                            android:layout_marginEnd="8dp"
+                            android:layout_marginStart="16dp"
+                            android:layout_marginTop="16dp"
+                            android:fontFamily="@font/roboto"
+                            android:text="Ubicación"
+                            android:textSize="16sp"
+                            app:layout_constraintBottom_toTopOf="@+id/textViewLocation"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintHorizontal_bias="0.0"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <TextView
+                            android:id="@+id/textViewLocation"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="16dp"
+                            android:layout_marginEnd="8dp"
+                            android:layout_marginStart="16dp"
+                            android:ellipsize="end"
+                            android:fontFamily="@font/roboto"
+                            android:lines="1"
+                            android:maxLines="1"
+                            android:text="Ubicacion"
+                            android:textColor="@color/colorPrimary"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintHorizontal_bias="1.0"
+                            app:layout_constraintStart_toStartOf="parent" />
+
+                    </android.support.constraint.ConstraintLayout>
 
                     <android.support.constraint.ConstraintLayout
                         android:id="@+id/constraintEP"
@@ -106,8 +162,9 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHorizontal_bias="0.0"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/constraintEP">
+                        app:layout_constraintTop_toBottomOf="@+id/constraintFecha">
 
                         <TextView
                             android:id="@+id/textViewVehiculo"
@@ -196,8 +253,10 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:visibility="visible"
-                        app:layout_constraintTop_toBottomOf="@+id/constraintVehiculo"
-                        tools:layout_editor_absoluteX="0dp">
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/constraintVehiculo">
 
                         <TextView
                             android:id="@+id/textViewMonto"
@@ -225,6 +284,7 @@
                             android:layout_marginStart="16dp"
                             android:fontFamily="@font/roboto"
                             android:inputType="text"
+                            android:text="Monto"
                             android:textColor="@color/colorPrimary"
                             android:textSize="20sp"
                             android:textStyle="bold"
@@ -236,16 +296,16 @@
                     </android.support.constraint.ConstraintLayout>
 
                     <android.support.constraint.ConstraintLayout
-                        android:id="@+id/constraintPayPal"
+                        android:id="@+id/constraintFecha"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="86dp"
                         android:visibility="visible"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/constraintMonto"
-                        tools:layout_editor_absoluteX="0dp">
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/constraintUbicacion">
 
                         <TextView
-                            android:id="@+id/textViewPayPal"
+                            android:id="@+id/textViewFecha"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="8dp"
@@ -253,16 +313,16 @@
                             android:layout_marginStart="16dp"
                             android:layout_marginTop="16dp"
                             android:fontFamily="@font/roboto"
-                            android:text="Cuenta PayPal"
+                            android:text="Fecha"
                             android:textSize="16sp"
-                            app:layout_constraintBottom_toTopOf="@+id/textViewPay"
+                            app:layout_constraintBottom_toTopOf="@+id/textViewDate"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintHorizontal_bias="0.0"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
 
                         <TextView
-                            android:id="@+id/textViewPay"
+                            android:id="@+id/textViewDate"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="16dp"
@@ -270,6 +330,7 @@
                             android:layout_marginStart="16dp"
                             android:fontFamily="@font/roboto"
                             android:inputType="text"
+                            android:text="Fecha"
                             android:textColor="@color/colorPrimary"
                             android:textSize="20sp"
                             android:textStyle="bold"
@@ -286,7 +347,7 @@
                     android:id="@+id/btnPayPal"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
+                    android:layout_marginBottom="8dp"
                     android:layout_marginLeft="16dp"
                     android:layout_marginRight="16dp"
                     android:layout_marginTop="16dp"
@@ -294,6 +355,20 @@
                     android:text="Pagar sanción"
                     android:textAllCaps="?android:attr/windowOverscan"
                     android:textColor="@android:color/background_light" />
+
+                <Button
+                    android:id="@+id/btnCancelar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:layout_marginLeft="16dp"
+                    android:layout_marginRight="16dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@color/colorPrimaryDark"
+                    android:text="Cancelar"
+                    android:textAllCaps="?android:attr/windowOverscan"
+                    android:textColor="@android:color/background_light" />
+
             </LinearLayout>
         </android.support.constraint.ConstraintLayout>
     </android.support.v4.widget.NestedScrollView>

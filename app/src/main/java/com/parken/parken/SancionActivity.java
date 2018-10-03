@@ -89,6 +89,7 @@ public class SancionActivity extends AppCompatActivity {
                 pagarSancion.putExtra("zonaParken", item.getNombreZonaParken());
                 pagarSancion.putExtra("modeloVehiculo", item.getModeloVehiculo());
                 //pagarSancion.putExtra("marcaVehiculo", item.getModeloVehiculo());
+                pagarSancion.putExtra("ubicacion", item.getDireccionEspacioParken());
                 pagarSancion.putExtra("placaVehiculo", item.getPlacaAutomovilista());
                 pagarSancion.putExtra("tiempo", item.getTiempo() );
                 pagarSancion.putExtra("monto", item.getMonto());
@@ -207,7 +208,7 @@ public class SancionActivity extends AppCompatActivity {
                     Integer.parseInt(jsonSanciones.getJSONObject(i).getString("idEspacioParken")),
                     Integer.parseInt(jsonSanciones.getJSONObject(i).getString("idZonaParken")),
                     jsonSanciones.getJSONObject(i).getString("NombreZonaParken"),
-                    "",
+                    jsonSanciones.getJSONObject(i).getString("DireccionEspacioParken"),
                     //obtenerDireccionJson(latitud, longitud),
                     //jsonSanciones.getJSONObject(i).getString("DireccionEP"),
                     getStaticMapUrl(latitud, longitud));

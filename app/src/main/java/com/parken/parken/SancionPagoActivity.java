@@ -39,20 +39,24 @@ public class SancionPagoActivity extends AppCompatActivity {
     private ConstraintLayout zp;
     private ConstraintLayout vehiculo;
     private ConstraintLayout monto;
-    private ConstraintLayout paypal;
+    private ConstraintLayout fecha;
+    private ConstraintLayout location;
 
     private TextView txtEspacioParken;
     private TextView txtZonaParken;
     private TextView textVehiculo;
     private TextView txtMonto;
-    private TextView txtPaypal;
+    private TextView txtFecha;
+    private TextView txtUbicacion;
 
     private Button pay;
+    private Button cancel;
 
     private String tiempo;
     private String placaVehiculo;
     private String modeloVehiculo;
     private String zonaParken;
+    private String ubicacion;
     private String origin;
 
     private int idSancion;
@@ -104,16 +108,18 @@ public class SancionPagoActivity extends AppCompatActivity {
         zp = findViewById(R.id.constraintZP);
         vehiculo = findViewById(R.id.constraintVehiculo);
         monto = findViewById(R.id.constraintMonto);
-        paypal = findViewById(R.id.constraintPayPal);
-
+        fecha = findViewById(R.id.constraintFecha);
+        location = findViewById(R.id.constraintUbicacion);
 
         txtEspacioParken = findViewById(R.id.textViewEspacioParken);
         txtZonaParken = findViewById(R.id.textViewZonaParken);
+        txtUbicacion = findViewById(R.id.textViewLocation);
         textVehiculo = findViewById(R.id.textViewCar);
         txtMonto = findViewById(R.id.textViewAmount);
-        txtPaypal = findViewById(R.id.textViewPay);
+        txtFecha = findViewById(R.id.textViewDate);
 
         pay = findViewById(R.id.btnPayPal);
+        cancel = findViewById(R.id.btnCancelar);
 
 
         Intent intent = getIntent();
@@ -121,6 +127,7 @@ public class SancionPagoActivity extends AppCompatActivity {
             espacioParken = intent.getIntExtra("espacioParken", 0);
             idSancion = intent.getIntExtra("idSancion", 0);
             zonaParken = intent.getStringExtra("zonaParken");
+            ubicacion = intent.getStringExtra("ubicacion");
             modeloVehiculo = intent.getStringExtra("modeloVehiculo");
             placaVehiculo = intent.getStringExtra("placaVehiculo");
             tiempo = intent.getStringExtra("tiempo");
@@ -135,6 +142,8 @@ public class SancionPagoActivity extends AppCompatActivity {
 
         txtEspacioParken.setText(String.valueOf(espacioParken));
         txtZonaParken.setText(zonaParken);
+        txtUbicacion.setText(ubicacion);
+        txtFecha.setText(tiempo + " hrs");
         String carro = modeloVehiculo + " - " + placaVehiculo;
         textVehiculo.setText(carro);
         String precio = "$ " + String.valueOf(montoSancion) + "0 MXN";
@@ -143,29 +152,39 @@ public class SancionPagoActivity extends AppCompatActivity {
         pay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 processPayment();
                 //dialogConfirmPayTicket().show();
 
-                //Dos opciones
-                //Pago correcto -> Update Sancion, Generar reporte
-                //Pago incorrecto -> Salir
+            }
+        });
+
+        cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //Solo cerramos el activity
+                finish();
+
             }
         });
 
     }
 
     private void processPayment() {
+
         PayPalPayment paypalPayment = new PayPalPayment(new BigDecimal(montoSancion),
-                "MXN", "Parken Test", PayPalPayment.PAYMENT_INTENT_SALE);
+                SesionParkenActivity.CURRENCY, "Parken Test", PayPalPayment.PAYMENT_INTENT_SALE);
 
         Intent intent = new Intent(this, PaymentActivity.class);
         intent.putExtra(PayPalService.EXTRA_PAYPAL_CONFIGURATION, paypalConfig);
         intent.putExtra(PaymentActivity.EXTRA_PAYMENT, paypalPayment);
         startActivityForResult(intent, PAYPAL_REQUEST_CODE);
+
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
         if (requestCode == PAYPAL_REQUEST_CODE) {
             if(resultCode == RESULT_OK){
                 PaymentConfirmation confirmation = data.getParcelableExtra(PaymentActivity.EXTRA_RESULT_CONFIRMATION);
@@ -180,7 +199,7 @@ public class SancionPagoActivity extends AppCompatActivity {
                         sbView.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.colorPrimaryDark));
                         snackbar.show();
                         */
-                        pagoTicketExitoso(idSancion);
+                        payReceiptSuccesful(idSancion);
                         //Intent intent = new Intent(SancionPagoActivity.this, ParkenActivity.class);
                         //startActivity(intent);
 
@@ -204,7 +223,7 @@ public class SancionPagoActivity extends AppCompatActivity {
         }
     }
 
-    private void pagoTicketExitoso(int idSancion) throws JSONException {
+    private void payReceiptSuccesful(int idSancion) throws JSONException {
 
 
             HashMap<String, String> parametros = new HashMap();
@@ -223,11 +242,23 @@ public class SancionPagoActivity extends AppCompatActivity {
 
                                     Log.d("PagarSancion", response.toString());
                                     //showProgress(false);
-                                    dialogPaySuccessful().show();
+                                    if(origin.equals("SancionActivity")){
+                                        //activitySancion.adapterSancion.notifyDataSetChanged();
+                                        dialogPaySuccessful().show();
+                                    }
+                                    if(origin.equals("SesionActivity")){
+                                        //activitySesion.adapterSesion.notifyDataSetChanged();
+                                        dialogPaySuccessful().show();
+                                    }
+                                    if(origin.equals("Parken")){
 
+                                        Intent dialogIntent = new Intent(getApplicationContext(), ParkenActivity.class);
+                                        dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                        dialogIntent.putExtra("Activity", ParkenActivity.ACTIVITY_PAY_RECEIPT);
+                                        startActivity(dialogIntent);
+                                        finish();
 
-
-                                    //parseSancionesJSON(response.getString("Sanciones"));
+                                    }
 
                                 }else{
                                     //showProgress(false);
@@ -237,12 +268,13 @@ public class SancionPagoActivity extends AppCompatActivity {
 
                                 }
 
+                                return;
+
                             } catch (JSONException e) {
                                 e.printStackTrace();
                                 //showProgress(false);
                                 dialogFailed().show();
-
-
+                                return;
                             }
                         }
                     },
@@ -252,7 +284,8 @@ public class SancionPagoActivity extends AppCompatActivity {
                             //showProgress(false);
                             Log.d("PagarSancion", "Error Respuesta en JSON: " + error.getMessage());
                             dialogFailed().show();
-                            //Mostrar dialog
+                            return;
+
                         }
                     });
 
@@ -287,43 +320,24 @@ public class SancionPagoActivity extends AppCompatActivity {
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                if(origin.equals("SancionActivity")){
-                                    activitySancion.adapterSancion.notifyDataSetChanged();
-                                }
-                                if(origin.equals("SesionActivity")){
-                                    activitySesion.adapterSesion.notifyDataSetChanged();
-                                }
-
-                                dialog.cancel();
-                                finish();
-
-
+                                dialog.dismiss();
                             }
                         })
-                .setOnCancelListener(new DialogInterface.OnCancelListener() {
-                    @Override
-                    public void onCancel(DialogInterface dialog) {
-                        if(origin.equals("SancionActivity")){
-                            activitySancion.adapterSancion.notifyDataSetChanged();
-                        }
-                        if(origin.equals("SesionActivity")){
-                            activitySesion.adapterSesion.notifyDataSetChanged();
-                        }
-                        dialog.cancel();
-                        finish();
 
-                    }
-                })
                 .setOnDismissListener(new DialogInterface.OnDismissListener() {
                     @Override
                     public void onDismiss(DialogInterface dialog) {
                         if(origin.equals("SancionActivity")){
-                            activitySancion.adapterSancion.notifyDataSetChanged();
+                            //activitySancion.adapterSancion.notifyDataSetChanged();
+                            startActivity(new Intent(getApplicationContext(), SancionActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+
                         }
                         if(origin.equals("SesionActivity")){
-                            activitySesion.adapterSesion.notifyDataSetChanged();
+                            //activitySesion.adapterSesion.notifyDataSetChanged();
+                            startActivity(new Intent(getApplicationContext(), SesionActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+
                         }
-                        dialog.cancel();
+
                         finish();
 
                     }
