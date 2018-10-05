@@ -119,7 +119,8 @@ public class VerifyCodeFragment extends Fragment {
                 correo = getArguments().getString("correo");
                 password = getArguments().getString("password");
 
-            }else{
+            }
+            if (origin.equals("informationActivity")){
 
                 id = getArguments().getString("id");
                 column = getArguments().getString("column");
@@ -128,6 +129,7 @@ public class VerifyCodeFragment extends Fragment {
             }
 
         }
+
         volley = VolleySingleton.getInstance(getContext());
         fRequestQueue = volley.getRequestQueue();
         fragmentCodeVerify = this;
@@ -144,9 +146,6 @@ public class VerifyCodeFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-
-        ((RecoverPasswordActivity) getActivity())
-                .setupActionBar(false);
 
 
         mVerifyFormView = getActivity().findViewById(R.id.nestedScrollForm);
@@ -168,13 +167,11 @@ public class VerifyCodeFragment extends Fragment {
         resend = root.findViewById(R.id.btnResendCode);
         form2 = root.findViewById(R.id.verify_form);
 
-
         txtSecond = root.findViewById(R.id.textViewSeconds);
 
-        txtVerifying.setText("Verificando "+ phoneNumberFormatted);
-        txtNumberConfirm.setText(phoneNumberFormatted);
 
         if(getArguments() != null) {
+
             verificationId = getArguments().getString("veriId");
             phoneNumber = getArguments().getString("phone");
             phoneNumberFormatted = getArguments().getString("phoneFormatted");
@@ -189,10 +186,21 @@ public class VerifyCodeFragment extends Fragment {
                 wrong.setVisibility(View.GONE);
                 verify2.setText("Siguiente");
 
-
+                ((RecoverPasswordActivity) getActivity())
+                        .setupActionBar(false);
 
             }
+
+            if(origin.equals("informationActivity"))
+                ((VerifyActivity) getActivity())
+                        .setupActionBar(false);
+                if(origin.equals("createActivity"))
+                    ((VerifyActivity) getActivity())
+                            .setupActionBar(false);
         }
+
+        txtVerifying.setText("Verificando "+ phoneNumberFormatted);
+        txtNumberConfirm.setText(phoneNumberFormatted);
 
         wrong.setOnClickListener(new View.OnClickListener() {
            @Override
@@ -201,7 +209,31 @@ public class VerifyCodeFragment extends Fragment {
                VerifyFragment verifiyFragment = new VerifyFragment();
                 session.setVerifying(false);
                 timerTask.cancel(true);
+
+               Bundle arg = new Bundle();
+
+               if(origin.equals("createActivity")){
+                   arg.putString("phone", phoneNumber);
+                   arg.putString("phoneFormatted", phoneNumberFormatted);
+                   arg.putString("nombre", nombre);
+                   arg.putString("apellido", apellido);
+                   arg.putString("correo", correo);
+                   arg.putString("password", password);
+                   arg.putString("origin", origin);
+               }
+               if(origin.equals("informationActivity")){
+                   arg.putString("id", id);
+                   arg.putString("phone", phoneNumber);
+                   arg.putString("phoneFormatted", phoneNumberFormatted);
+                   arg.putString("column", column);
+                   arg.putString("value", value);
+                   arg.putString("origin", origin);
+               }
+               verifiyFragment.setArguments(arg);
+
+
                getActivity().getSupportFragmentManager().beginTransaction()
+                       //.remove(getParentFragment())
                        .replace(R.id.nestedScrollForm, verifiyFragment)
                        .addToBackStack(null)
                        .commit();
@@ -266,8 +298,6 @@ public class VerifyCodeFragment extends Fragment {
 
         timerTask.execute();
 
-
-
         return root;
     }
 
@@ -293,11 +323,12 @@ public class VerifyCodeFragment extends Fragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
 
         builder.setTitle("Error")
-                .setMessage("El código ingresado no coincide con el código enviado.")
+                .setMessage("El código es incorrecto.")
                 .setPositiveButton("OK",
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
 
                             }
 
@@ -383,22 +414,25 @@ public class VerifyCodeFragment extends Fragment {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d("TAG", "signInWithCredential:success");
                             showProgress(false);
+
                             if(origin.equals("createActivity")){
                                 enviarJsonSign(phoneNumber);
-                            }else{
-                                if(origin.equals("recoverPasswordActivity")){
+                            }
+
+                            if(origin.equals("recoverPasswordActivity")){
                                     //Llamar al activity PasswordActivity
                                     Intent password = new Intent(getActivity(), PasswordActivity.class);
                                     password.putExtra("id", id);
                                     password.putExtra("column", column);
                                     password.putExtra("value", value);
-                                    password.putExtra("origin", "editProfileActivity");
+                                    password.putExtra("origin", "recoverPasswordActivity");
                                     startActivity(password);
-                                } else{
-                                    actualizarPerfilAutomovilista(id,column,phoneNumber);
-                                }
-
                             }
+
+                            if (origin.equals("informationActivity")){
+                                    actualizarPerfilAutomovilista(id,column,phoneNumber);
+                            }
+
 
                             //dialogSuccess().show();
 
@@ -670,11 +704,14 @@ public class VerifyCodeFragment extends Fragment {
             txtSecond.setText("");
             txtSecond.setVisibility(View.INVISIBLE);
             resend.setVisibility(View.VISIBLE);
+            timerTask = null;
+            super.onPostExecute(success);
         }
 
         @Override
         protected void onCancelled() {
-            cancel(true);
+            timerTask = null;
+            super.onCancelled();
 
         }
     }

@@ -39,6 +39,8 @@ public class RecoverPasswordActivity extends AppCompatActivity {
 
     protected RequestQueue fRequestQueue;
 
+    public static RecoverPasswordActivity activityRecoverPassword= new RecoverPasswordActivity();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

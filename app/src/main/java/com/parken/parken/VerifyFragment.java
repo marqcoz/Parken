@@ -55,12 +55,17 @@ public class VerifyFragment extends Fragment {
     String celular, codigoPais;
     View form;
     FirebaseAuth mAuth;
-    FirebaseAuth.AuthStateListener mAuthListener;
-    private String phoneNumber, phoneNumberFormatted, code, origin;
+    String phoneNumber;
+    String phoneNumberFormatted;
+    String code;
+    String origin;
+
+    boolean actionBar = true;
 
     VerifyFragment fragmentVerify;
     String nombre, apellido, correo, password;
     String id, column, value;
+
     private VolleySingleton volley;
     protected RequestQueue fRequestQueue;
     private ShPref session;
@@ -94,18 +99,31 @@ public class VerifyFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
+
             origin = getArguments().getString("origin");
-            if(origin.equals("createActivity")){
-                nombre = getArguments().getString("nombre");
-                apellido = getArguments().getString("apellido");
-                correo = getArguments().getString("correo");
-                password = getArguments().getString("password");
 
-            }else{
-                id = getArguments().getString("id");
-                column = getArguments().getString("column");
-                value = getArguments().getString("value");
+            switch (origin){
 
+                case "createActivity":
+
+                    nombre = getArguments().getString("nombre");
+                    apellido = getArguments().getString("apellido");
+                    correo = getArguments().getString("correo");
+                    password = getArguments().getString("password");
+
+                    break;
+
+                case "informationActivity":
+
+                    id = getArguments().getString("id");
+                    column = getArguments().getString("column");
+                    value = getArguments().getString("value");
+
+
+                    break;
+
+                default:
+                    break;
             }
 
 
@@ -118,7 +136,8 @@ public class VerifyFragment extends Fragment {
 
 
         ((VerifyActivity) getActivity())
-                .setupActionBar(true);
+                .setupActionBar(actionBar);
+
 
 
     }
@@ -246,6 +265,7 @@ public class VerifyFragment extends Fragment {
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
                             }
                         });
 
@@ -260,6 +280,7 @@ public class VerifyFragment extends Fragment {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         //No hacer nada
+                        dialog.dismiss();
                         return;
                     }
                 })
@@ -267,6 +288,7 @@ public class VerifyFragment extends Fragment {
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
                                 showProgress(true);
                                 verificarCredencial("2", phoneNumber);
 
@@ -319,9 +341,11 @@ public class VerifyFragment extends Fragment {
                         if (e instanceof FirebaseAuthInvalidCredentialsException) {
                             // Invalid request
                             // ...
+                            dialogError(e.getMessage()).show();
                         } else if (e instanceof FirebaseTooManyRequestsException) {
                             // The SMS quota for the project has been exceeded
                             // ...
+                            dialogError(e.getMessage()).show();
                         }
 
                         // Show a message and update the UI
@@ -334,12 +358,16 @@ public class VerifyFragment extends Fragment {
                         code = s;
                         showProgress(false);
                         abrirVerifyCode(code);
+                        //dialogSuccess().show();
                     }
 
                     @Override
                     public void onCodeAutoRetrievalTimeOut(String s) {
+                        dialogVerificationFailed().show();
                         super.onCodeAutoRetrievalTimeOut(s);
                     }
+
+
                 }
 
         );
@@ -352,6 +380,7 @@ public class VerifyFragment extends Fragment {
 
         VerifyCodeFragment vcf = new VerifyCodeFragment();
             Bundle arg = new Bundle();
+
             if(origin.equals("createActivity")){
                 arg.putString("veriId", code);
                 arg.putString("phone", phoneNumber);
@@ -361,7 +390,8 @@ public class VerifyFragment extends Fragment {
                 arg.putString("correo", correo);
                 arg.putString("password", password);
                 arg.putString("origin", origin);
-            }else{
+            }
+            if(origin.equals("informationActivity")){
                 arg.putString("id", id);
                 arg.putString("veriId", code);
                 arg.putString("phone", phoneNumber);
@@ -373,6 +403,8 @@ public class VerifyFragment extends Fragment {
             vcf.setArguments(arg);
 
             getActivity().getSupportFragmentManager().beginTransaction()
+                    //.remove(this)
+                    //.add(R.id.nestedScrollForm, vcf)
                     .replace(R.id.nestedScrollForm, vcf)
                     .addToBackStack(null)
                     .commit();
@@ -416,29 +448,30 @@ public class VerifyFragment extends Fragment {
 
     //Esta da el acceso
     private void signInWithPhoneAuthCredential(PhoneAuthCredential credential) {
+        Log.e("PhoneAuthFirebase", "true");
         mAuth.signInWithCredential(credential)
                 .addOnCompleteListener(getActivity(), new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
+                        showProgress(false);
+
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
-                            showProgress(false);
                             if(origin.equals("createActivity")){
                                 enviarJsonSign(phoneNumber);
-                            }else{
+                            }
+                            if (origin.equals("informationActivity")){
                                 actualizarPerfilAutomovilista(id,column,phoneNumber);
                             }
-
-                            //dialogSuccess().show();
 
                         } else {
                             // Sign in failed, display a message and update the UI
                             Log.d("TAG", "signInWithCredential:failure", task.getException());
                             if (task.getException() instanceof FirebaseAuthInvalidCredentialsException) {
                                 // The verification code entered was invalid
-                                showProgress(false);
                                 dialogVerificationFailed().show();
                             }
+                            dialogVerificationFailed().show();
                         }
                     }
                 });
@@ -462,20 +495,26 @@ public class VerifyFragment extends Fragment {
                     public void onResponse(JSONObject response) {
 
                         try {
+
                             if(response.getString("success").equals("1")){
                                 //Si success:1 ya existe el celular.
                                 showProgress(false);
                                 dialogExistCel().show();
-                                return;
+
 
                             }else{
                                 //Si success:2 no existe el celular, pasamos a verificar el celular
                                 verificarCelular();
-
+                                //dialogSuccess().show();
 
                             }
+
+                            return;
+
                         } catch (JSONException e) {
                             e.printStackTrace();
+                            showProgress(false);
+                            dialogNoConnection().show();
                         }
 
                     }
@@ -485,6 +524,7 @@ public class VerifyFragment extends Fragment {
                     public void onErrorResponse(VolleyError error) {
                         showProgress(false);
                         dialogNoConnection().show();
+                        return;
                     }
                 });
 
@@ -508,31 +548,47 @@ public class VerifyFragment extends Fragment {
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response){
+
                         //Log.d("LoginActivity", response.toString());
                         try {
+
+                            showProgress(false);
+
                             if(response.getString("success").equals("1")){
 
                                 //Guardar los datos en la memoria del teléfono
                                 //guardarDatosAutomovilista(response.getString(), nombre, apellido, correo, password, phone, "0.0");
                                 session.setInfo(response.getString("id"),nombre, apellido, correo, password, phone, "0.0");
                                 session.setLoggedin(true);
-                                showProgress(false);
                                 //dialogWelcome().show();
 
-                                if(origin.equals("createActivity")){
-                                    //startActivity(new Intent(getActivity(), ParkenActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NO_HISTORY | Intent.FLAG_ACTIVITY_CLEAR_TASK));
-                                    getActivity().finish();
-                                    loginAct.activityLogin.finish();
-                                    createActivity.activityCreate.finish();
-                                    verifyActivity.activityVerify.finish();
-                                }else{
-                                    getActivity().finish();
+                                switch (origin){
+                                    case "createActivity":
+
+                                        getActivity().finish();
+                                        loginAct.activityLogin.finish();
+                                        createActivity.activityCreate.finish();
+                                        verifyActivity.activityVerify.finish();
+
+                                        startActivity(new Intent(getActivity(), ParkenActivity.class));
+
+                                        break;
+                                    case "informationActivity":
+
+                                        getActivity().finish();
+
+                                        break;
+
+                                        default:
+
+                                            getActivity().finish();
+
+                                            break;
                                 }
 
-                                //addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NO_HISTORY | Intent.FLAG_ACTIVITY_CLEAR_TASK)
 
                             }else{
-                                showProgress(false);
+
                                 if(response.getString("success").equals("2")){
                                     dialogNoUser(2).show();
                                 }
@@ -540,8 +596,13 @@ public class VerifyFragment extends Fragment {
                                     dialogNoUser(3).show();
                                 }
                             }
+
+                            return;
+
                         } catch (JSONException e) {
                             e.printStackTrace();
+                            showProgress(false);
+                            dialogNoConnection().show();
                         }
 
                     }
@@ -551,9 +612,7 @@ public class VerifyFragment extends Fragment {
                     public void onErrorResponse(VolleyError error) {
                         showProgress(false);
                         dialogNoConnection().show();
-
-
-
+                        return;
                     }
                 });
 
@@ -562,6 +621,7 @@ public class VerifyFragment extends Fragment {
     }
 
     public void actualizarPerfilAutomovilista(String id, String column, String value){
+
         HashMap<String, String> parametros = new HashMap();
         parametros.put("id", id);
         parametros.put("column", column);
@@ -574,12 +634,10 @@ public class VerifyFragment extends Fragment {
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response){
-                        //Log.d("LoginActivity", response.toString());
+
                         try {
                             if(response.getString("success").equals("1")){
                                 showProgress(false);
-                                //Si los datos se actualizaron correctamente, entonces cerramos el activity
-                                //y/o cerramos el otro activity y lo reiniciamos o lo volvemos a abrir
                                 dialogUpdateSuccess().show();
 
                             }else{
@@ -588,8 +646,13 @@ public class VerifyFragment extends Fragment {
                                     dialogUpdateFailed().show();
                                 }
                             }
+
+                            return;
+
                         } catch (JSONException e) {
                             e.printStackTrace();
+                            showProgress(false);
+                            dialogUpdateFailed().show();
                         }
 
                     }
@@ -599,8 +662,7 @@ public class VerifyFragment extends Fragment {
                     public void onErrorResponse(VolleyError error) {
                         showProgress(false);
                         dialogNoConnection().show();
-
-
+                        return;
 
                     }
                 });
@@ -615,15 +677,16 @@ public class VerifyFragment extends Fragment {
      */
 
     public AlertDialog dialogUpdateFailed() {
+
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
         builder.setTitle("Error")
-                .setMessage("Error al actualizar el perfil. Intente de nuevo.")
+                .setMessage("Error al actualizar el perfil. Intenta de nuevo.")
                 .setPositiveButton("OK",
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-
+                                dialog.dismiss();
                             }
                         });
 
@@ -631,6 +694,7 @@ public class VerifyFragment extends Fragment {
     }
 
     public AlertDialog dialogUpdateSuccess() {
+
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
         builder.setTitle("Actualización exitosa")
@@ -648,7 +712,25 @@ public class VerifyFragment extends Fragment {
         return builder.create();
     }
 
+    public android.support.v7.app.AlertDialog dialogError(String msg) {
+        android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(getContext());
+
+        builder.setTitle("Error")
+                .setMessage(msg)
+                .setPositiveButton("OK",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+
+                            }
+
+                        });
+
+        return builder.create();
+    }
+
     public AlertDialog dialogNoUser(int info) {
+
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         String message = "";
         if(info == 2){
@@ -658,13 +740,13 @@ public class VerifyFragment extends Fragment {
             message = "número celular";
         }
 
-        builder.setTitle("No se pudo crear la cuenta")
+        builder.setTitle("Error al crear la cuenta")
                 .setMessage("El "+ message + " ya está registrado.")
                 .setPositiveButton("OK",
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                //listener.onPossitiveButtonClick();
+                                dialog.dismiss();
                             }
                         });
 
@@ -672,6 +754,7 @@ public class VerifyFragment extends Fragment {
     }
 
     public AlertDialog dialogExistCel() {
+
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
         builder.setTitle("Número celular registrado")
@@ -680,6 +763,7 @@ public class VerifyFragment extends Fragment {
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
                                 return;
                             }
                         });
@@ -687,7 +771,25 @@ public class VerifyFragment extends Fragment {
         return builder.create();
     }
 
+    public AlertDialog dialogNoConnection() {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+
+        builder.setTitle("Error")
+                .setMessage("No se puede realizar la conexión con el servidor. Intenta de nuevo.")
+                .setPositiveButton("OK",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
+
+        return builder.create();
+    }
+
     public AlertDialog dialogWelcome() {
+
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
         builder.setTitle("Bienvenido")
@@ -696,23 +798,7 @@ public class VerifyFragment extends Fragment {
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                //listener.onPossitiveButtonClick();
-                            }
-                        });
-
-        return builder.create();
-    }
-
-    public AlertDialog dialogNoConnection() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-
-        builder.setTitle("Error")
-                .setMessage("No se puede realizar la conexión con el servidor. Intente de nuevo")
-                .setPositiveButton("OK",
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                //listener.onPossitiveButtonClick();
+                                dialog.dismiss();
                             }
                         });
 

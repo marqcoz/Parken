@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -14,29 +15,36 @@ import com.google.firebase.auth.FirebaseAuth;
 
 public class VerifyActivity extends AppCompatActivity{
 
-    AutoCompleteTextView countryCode, cel;
-    Button verify;
-    String celular, codigoPais;
-    String nombre, apellido, correo, password, origin;
-    String id, column, value;
+
+    String nombre;
+    String apellido;
+    String correo;
+    String password;
+    String origin;
+
+    String code;
+
+    String id;
+    String column;
+    String value;
+
     View form;
 
-    private FirebaseAuth mAuth;
     private VolleySingleton volley;
     protected RequestQueue fRequestQueue;
-    FirebaseAuth.AuthStateListener mAuthListener;
-    String phoneNumber, phoneNumberFormatted, code;
+
     public static VerifyActivity activityVerify;
-    private View mProgressView;
-    private View mVerifyFormView;
     private ShPref session;
-    private LoginActivity loginAct = new LoginActivity();
 
     @Override
     public  void onBackPressed(){
+
         if(session != null){
+
             if(session.getVerifying()){ } else{ super.onBackPressed(); }
+
         }else{
+
             super.onBackPressed();
         }
     }
@@ -50,30 +58,41 @@ public class VerifyActivity extends AppCompatActivity{
         setSupportActionBar(toolbar);
         setupActionBar(true);
 
-
         Intent intent = getIntent();
         origin = intent.getStringExtra("origin");
-        if(origin.equals("createActivity")){
-            nombre = intent.getStringExtra("nombre");
-            apellido = intent.getStringExtra("apellido");
-            correo = intent.getStringExtra("correo");
-            password = intent.getStringExtra("password");
-        }else{
-            id = intent.getStringExtra("id");
-            column = intent.getStringExtra("column");
-            value = intent.getStringExtra("value");
+
+        if(origin == null){
+            origin = "createActivity";
         }
 
+        switch (origin){
 
+            case "createActivity":
 
+                nombre = intent.getStringExtra("nombre");
+                apellido = intent.getStringExtra("apellido");
+                correo = intent.getStringExtra("correo");
+                password = intent.getStringExtra("password");
+
+                break;
+            case "informationActivity":
+
+                id = intent.getStringExtra("id");
+                column = intent.getStringExtra("column");
+                value = intent.getStringExtra("value");
+
+                break;
+
+                default:
+
+                    break;
+        }
 
         volley = VolleySingleton.getInstance(getApplicationContext());
         fRequestQueue = volley.getRequestQueue();
         activityVerify = this;
         session = new ShPref(activityVerify);
         session.setVerifying(false);
-        mVerifyFormView = findViewById(R.id.nestedScrollForm);
-        mProgressView = findViewById(R.id.verifiy_progress);
 
         VerifyFragment verifyFragment = (VerifyFragment)
                 getSupportFragmentManager().findFragmentById(R.id.nestedScrollForm);
@@ -84,16 +103,27 @@ public class VerifyActivity extends AppCompatActivity{
             Bundle arguments = new Bundle();
             arguments.putString("origin",origin);
 
-            if(origin.equals("createActivity")){
-                arguments.putString("nombre", nombre);
-                arguments.putString("apellido", apellido);
-                arguments.putString("correo", correo);
-                arguments.putString("password", password);
+            switch (origin){
 
-            }else{
-                arguments.putString("id", id);
-                arguments.putString("column", column);
-                arguments.putString("value", value);
+                case "createActivity":
+
+                    arguments.putString("nombre", nombre);
+                    arguments.putString("apellido", apellido);
+                    arguments.putString("correo", correo);
+                    arguments.putString("password", password);
+
+                    break;
+
+                case "informationActivity":
+
+                    arguments.putString("id", id);
+                    arguments.putString("column", column);
+                    arguments.putString("value", value);
+
+                    break;
+
+                default:
+                    break;
             }
 
             verifyFragment.setArguments(arguments);
@@ -110,6 +140,22 @@ public class VerifyActivity extends AppCompatActivity{
             // Show the Up button in the action bar.
             actionBar.setDisplayHomeAsUpEnabled(estatus);
         }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            // Respond to the action bar's Up/Home button
+            case android.R.id.home:
+
+                onBackPressed();
+                finish();
+
+                return true;
+        }
+
+
+        return super.onOptionsItemSelected(item);
     }
 
 

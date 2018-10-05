@@ -21,6 +21,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.android.volley.Request;
@@ -50,6 +51,8 @@ public class CreateActivity extends AppCompatActivity {
     Button sign;
     CheckBox terms;
 
+    ScrollView form;
+
     //TextView
     AutoCompleteTextView name;
     AutoCompleteTextView lastname;
@@ -75,8 +78,8 @@ public class CreateActivity extends AppCompatActivity {
         activityCreate = this;
         //session = new ShPref(activity);
 
-        mCreateFormView = findViewById(R.id.linear_lay);
-        mProgressView = findViewById(R.id.login_progress);
+        mCreateFormView = findViewById(R.id.create_form);
+        mProgressView = findViewById(R.id.create_progress);
 
         volley = VolleySingleton.getInstance(getApplicationContext());
         fRequestQueue = volley.getRequestQueue();
@@ -91,9 +94,7 @@ public class CreateActivity extends AppCompatActivity {
         terms = findViewById(R.id.checkBoxTerminos);
 
 
-        //Metodo para esconder el teclado
-        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(sign.getWindowToken(), 0);
+
 
 
         sign.setOnClickListener(new View.OnClickListener() {
@@ -119,6 +120,10 @@ public class CreateActivity extends AppCompatActivity {
 
     //Método para registrar la información del automovilista
     private void attemptSigin() {
+
+        //Metodo para esconder el teclado
+        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(mCreateFormView.getWindowToken(), 0);
 
         // Reset errors.
         name.setError(null);
@@ -248,6 +253,7 @@ public class CreateActivity extends AppCompatActivity {
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
+                            dialogNoConnection().show();
                         }
 
                     }

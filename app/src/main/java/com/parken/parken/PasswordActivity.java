@@ -54,6 +54,8 @@ public class PasswordActivity extends AppCompatActivity {
     private EditProfileActivity editAct = new EditProfileActivity();
     private InformationActivity infAct = new InformationActivity();
 
+    public static PasswordActivity activityPassword;
+
     private View mProgressView;
     private View mPassFormView;
 
@@ -64,7 +66,7 @@ public class PasswordActivity extends AppCompatActivity {
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        setupActionBar();
+        setupActionBar("");
 
         refreshPass = findViewById(R.id.btnSavePassword);
         pass1 = findViewById(R.id.autoCompleteTextViewPass);
@@ -87,6 +89,15 @@ public class PasswordActivity extends AppCompatActivity {
                 column = intent.getStringExtra("column");
                 value =  intent.getStringExtra("value");
 
+            }
+
+            if(origin.equals("recoverPasswordActivity")){
+
+                id = intent.getStringExtra("id");
+                column = intent.getStringExtra("column");
+                value =  intent.getStringExtra("value");
+
+                setupActionBar(origin);
             }
 
             refreshPass.setOnClickListener(new View.OnClickListener() {
@@ -177,8 +188,16 @@ public class PasswordActivity extends AppCompatActivity {
                                 //dialogUpdateSuccess().show();
                                 finish();
                                 Log.d("Change", "password");
-                                startActivity(new Intent(PasswordActivity.this,InformationActivity.class)
-                                        .putExtra("Change", "password"));
+
+                                if(origin.equals("editProfileActivity")) {
+                                    startActivity(new Intent(PasswordActivity.this, InformationActivity.class)
+                                            .putExtra("Change", "password"));
+                                }
+                                if(origin.equals("recoverPasswordActivity")){
+                                    startActivity(new Intent(PasswordActivity.this, ParkenActivity.class));
+
+                                }
+
 
                             }else{
                                 showProgress(false);
@@ -298,12 +317,19 @@ public class PasswordActivity extends AppCompatActivity {
 
 
 
-    private void setupActionBar() {
+    private void setupActionBar(String act) {
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             // Show the Up button in the action bar.
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setTitle("Actualizar contraseña");
+            if(act.equals("recoverPasswordActivity")){
+                actionBar.setDisplayHomeAsUpEnabled(false);
+                actionBar.setTitle("Reestablecer contraseña");
+
+            }else{
+                actionBar.setDisplayHomeAsUpEnabled(true);
+                actionBar.setTitle("Actualizar contraseña");
+
+            }
         }
     }
 
@@ -318,5 +344,13 @@ public class PasswordActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(origin.equals("editProfileActivity"))
+            super.onBackPressed();
+
+
     }
 }

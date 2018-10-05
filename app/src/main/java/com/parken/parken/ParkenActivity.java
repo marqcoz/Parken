@@ -269,6 +269,7 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
 
     private int mapaReady = 0;
     private int mapaListo = 0;
+    private int contAuxPermission = 0;
 
     private GoogleMap mMap;
     private Marker m;
@@ -292,6 +293,7 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
     //DialogAlerts ---------------------------------------------------------------------------------
 
     private AlertDialog _dialog;
+    private AlertDialog dialogPermissionLocationRequired;
     private AlertDialog dialogParken;
     private AlertDialog dialogEPTimeOut;
     private AlertDialog dialogConfirmEndSP;
@@ -413,65 +415,37 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         Log.d("AppEstatus", "onCreate");
+
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_parken);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-
+        setTheme(R.style.AppTheme);
 
         activityParken = this;
         session = new ShPref(activityParken);
-        mGeofencingClient = LocationServices.getGeofencingClient(this);
+
         //****************
         // ALERTA
         session.setOnTheWay(false);
         //***********
 
-        //Verificamos la versión de la API
-        //Si es >23 pedimos acceso a la ubicación
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            // Versiones con android 6.0 o superior
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(activityParken, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1);
-                Log.d("CheckPermission", "Request");
-
-            } else {
-                if(session.loggedin()){
-                    Log.d("CheckPermission", "CargarMapa");
-                    loadMap();
-                }else {
-                    finish();
-                    startActivity(new Intent(ParkenActivity.this, LoginActivity.class));
-                }
-
-            }
-
-        } else {
-            //Versiones anteriores a android 6.0
-            if (PermissionChecker.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != 0) {
-                dialogPermissionRequired().show();
-                finish();
-
-            } else {
-                if(session.loggedin()){
-                    Log.d("CheckPermission", "CargarMapa");
-                    loadMap();
-                }else {
-                    finish();
-                    startActivity(new Intent(ParkenActivity.this, LoginActivity.class));
-                }
-
-            }
-        }
-
-
         if(!session.loggedin()) {
-            finish();
-        startActivity(new Intent(ParkenActivity.this, LoginActivity.class));
+
+          finish();
+          startActivity(new Intent(getApplicationContext(), LoginActivity.class));
+          return;
+
         }
 
+        requestPermissionLocation();
+
+
+
+        mGeofencingClient = LocationServices.getGeofencingClient(this);
 
         //Initialize and register the notification receiver
         IntentFilter intentFilter = new IntentFilter();
@@ -533,7 +507,9 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
         txtNameDriver.setText(nameHeader);
 
         createGoogleApi();
+        Log.e("TEST", "si paso");
         googleApiClient.connect();
+
         //Conectar socket
         connectSocket();
 
@@ -577,6 +553,7 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
             }
         });
 
+
         /*
         Botón NAVEGAR
         Al presionar el botón NAVEGAR se abrirá un navegador GPS
@@ -590,6 +567,7 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
 
             }
         });
+
 
         /*
         Botón CANCELAR
@@ -613,6 +591,7 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
 
             }
         });
+
 
         /*
         Botón RENOVAR
@@ -666,6 +645,7 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
             }
         });
 
+
         /*
         Botón FINALIZAR
         Al presionar el botón de FINALIZAR
@@ -678,6 +658,7 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
                 dialogFinishParken().show();
             }
         });
+
 
         /*
         Botón PAGAR SANCION
@@ -694,7 +675,6 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
         });
 
 
-
         /*
         Botón PERFIL
         Al presionar la información del perfil del automovilista
@@ -706,8 +686,6 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
                 startActivity(new Intent(ParkenActivity.this, InformationActivity.class));
             }
         });
-
-        googleApiClient.connect();
 
     }
 
@@ -1632,6 +1610,10 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
     public void onMapReady(GoogleMap googleMap) {
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            if(dialogPermissionLocationRequired == null && contAuxPermission != 1) {
+                dialogPermissionLocationRequired = dialogPermissionLocationRequired();
+                dialogPermissionLocationRequired.show();
+            }
             return;
         }
         mMap = googleMap;
@@ -1680,6 +1662,10 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
     public void readyMap(){
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            if(dialogPermissionLocationRequired == null && contAuxPermission != 1) {
+                dialogPermissionLocationRequired = dialogPermissionLocationRequired();
+                dialogPermissionLocationRequired.show();
+            }
             return;
         }
 
@@ -1963,6 +1949,10 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
     private void addGeofence(GeofencingRequest request, String vista) {
         Log.d("Geofence", "addGeofence");
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            if(dialogPermissionLocationRequired == null && contAuxPermission != 1) {
+                dialogPermissionLocationRequired = dialogPermissionLocationRequired();
+                dialogPermissionLocationRequired.show();
+            }
             return;
         }
         if(vista.equals(VIEW_ON_THE_WAY)){
@@ -2359,6 +2349,17 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
         }
     }
 
+    public void cerrarSesion(){
+
+        //Método para cerrar todas las conexiones al cerrar sesión
+        session.setLoggedin(false);
+        //getSharedPreferences("parken", Context.MODE_PRIVATE).edit().clear().commit();
+        session.clearAll();
+        unregisterReceiver(mReceiver);
+        startActivity(new Intent(getApplicationContext(), LoginActivity.class));
+        finish();
+    }
+
     public void pagarSancion(String sancionJSON){
 
         try {
@@ -2603,6 +2604,10 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
     private void startLocationUpdates(){
         Log.d("StartLocation", "startLocationUpdates()");
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            if(dialogPermissionLocationRequired == null && contAuxPermission != 1) {
+                dialogPermissionLocationRequired = dialogPermissionLocationRequired();
+                dialogPermissionLocationRequired.show();
+            }
             return;
         }
         locationRequest = LocationRequest.create()
@@ -2616,6 +2621,10 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
     private void getLastKnownLocation() {
         Log.d("GetLastKnownLocation", "getLastKnownLocation()");
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            if(dialogPermissionLocationRequired == null && contAuxPermission != 1) {
+                dialogPermissionLocationRequired = dialogPermissionLocationRequired();
+                dialogPermissionLocationRequired.show();
+            }
             return;
         }
 
@@ -2639,6 +2648,59 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
                 Log.w("GetLastKnownLocation", "No location retrieved yet");
                 startLocationUpdates();
             }
+    }
+
+
+    public void requestPermissionLocation(){
+
+        contAuxPermission = contAuxPermission + 1;
+        //Verificamos la versión de la API
+        //Si es >23 pedimos acceso a la ubicación
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            // Versiones con android 6.0 o superior
+            if (ActivityCompat.checkSelfPermission(this,
+                    Manifest.permission.ACCESS_FINE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED) {
+
+                // Should we show an explanation?
+                //if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                  //      Manifest.permission.ACCESS_FINE_LOCATION)) {
+
+                    // Show an expanation to the user *asynchronously* -- don't block
+                    // this thread waiting for the user's response! After the user
+                    // sees the explanation, try again to request the permission.
+                    //dialogEmpty("Dame permiso").show();
+
+
+                //} else {
+
+                    ActivityCompat.requestPermissions(activityParken, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1);
+                    Log.d("CheckPermission", "Request");
+
+                //}
+
+            }else {
+
+                Log.d("CheckPermission", "CargarMapa");
+                loadMap();
+
+            }
+
+        } else {
+            //Versiones anteriores a android 6.0
+            if (PermissionChecker.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != 0) {
+                dialogPermissionRequired().show();
+                finish();
+                return;
+
+            } else {
+
+                Log.d("CheckPermission", "CargarMapa");
+                loadMap();
+
+            }
+        }
+
     }
 
     /**
@@ -3785,19 +3847,19 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
 
                     // permission was granted, yay!
                     Log.d("PermissionResult", "permission was granted, yay!");
-                    if(session.loggedin()){
-                        Log.d("PermissionResultLogIn", String.valueOf(session.loggedin()));
-                        loadMap();
-                    }
-                    else {
-                        Log.d("PermissionResultNotLog", String.valueOf(session.loggedin()));
-                        finish();
-                        startActivity(new Intent(ParkenActivity.this, LoginActivity.class));
-                    }
+                    Log.d("PermissionResultLogIn", String.valueOf(session.loggedin()));
+                    loadMap();
+
 
                 } else {
                     // permission denied, boo!
-                    finish();
+                    //requestPermissionLocation();
+                    if(dialogPermissionLocationRequired == null) {
+                        dialogPermissionLocationRequired = dialogPermissionLocationRequired();
+                        dialogPermissionLocationRequired.show();
+                    }
+                    //finish();
+                    return;
                 }
 
             }
@@ -3858,64 +3920,69 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
     @Override
     protected void onDestroy() {
 
-        //Proximamente aqui se pondra la funcion de cancelAll()
-        session.setOnTheWay(false);
-        Log.d("AppEstatus", "onDestroy");
-        googleApiClient.disconnect();
+        if(session.loggedin()) {
+            //Proximamente aqui se pondra la funcion de cancelAll()
+            session.setOnTheWay(false);
+            Log.d("AppEstatus", "onDestroy");
+            googleApiClient.disconnect();
 
-        if(timerTask != null){
-            timerTask.cancel(true);
+            if (timerTask != null) {
+                timerTask.cancel(true);
+            }
+            cancelAllNotifications();
+            if (vista != null) {
+                if (vista.equals(VIEW_ON_THE_WAY))
+                    clearGeofence(GEOFENCE_ONTHEWAY);
+                if (vista.equals(VIEW_PARKEN_SPACE_BOOKED))
+                    clearGeofence(GEOFENCE_PARKEN_BOOKED);
+            }
+            //En este método guardaremos la vista y los datos necesarios para regresar
+            if (vista == null) {
+                Log.d("onDestroyVista", "Vista=null");
+            } else {
+                Log.d("onDestroyVista", vista);
+
+
+                switch (vista) {
+                    case VIEW_PARKEN:
+                        //Clear everything
+                        break;
+                    case VIEW_ON_THE_WAY:
+
+                        break;
+                    case VIEW_PARKEN_SPACE_BOOKED:
+                        break;
+                    case VIEW_PARKEN_SESSION_ACTIVE:
+                        break;
+                    case VIEW_PARKEN_REPORT:
+                        break;
+                    default:
+                        break;
+
+                }
+            }
+            //getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+            unregisterReceiver(mReceiver);
+
+            //Resetear variables de Movimiento -------------------------------------------------
+            session.setDriving(false);
+            session.setExiting(false);
+            session.setEntering(false);
+            //----------------------------------------------------------------
+
+            //Remover servicio ActivityRecognized ----------------------------
+//        deactivateActivityRecognition();
+            //----------------------------------------------------------------
+
+            //Cerrar sockets -------------------------------------------------
+            mSocket.disconnect();
+            mSocket.off(Jeison.SOCKET_FIND_PARKEN_SPACE, parkenSpace);
+            mSocket.off("chat message", parkenSpace);
+            //----------------------------------------------------------------
         }
-        cancelAllNotifications();
-
-        if(vista.equals(VIEW_ON_THE_WAY))
-            clearGeofence(GEOFENCE_ONTHEWAY);
-        if(vista.equals(VIEW_PARKEN_SPACE_BOOKED))
-            clearGeofence(GEOFENCE_PARKEN_BOOKED);
-        //En este método guardaremos la vista y los datos necesarios para regresar
-        if(vista == null){
-            Log.d("onDestroyVista","Vista=null");
-        }else{
-            Log.d("onDestroyVista",vista);
-
-
-
-        switch(vista){
-            case VIEW_PARKEN:
-                //Clear everything
-                break;
-            case VIEW_ON_THE_WAY:
-
-                break;
-            case VIEW_PARKEN_SPACE_BOOKED:
-                break;
-            case VIEW_PARKEN_SESSION_ACTIVE:
-                break;
-            case VIEW_PARKEN_REPORT:
-                break;
-                default:
-                    break;
-
-        }
-        }
-        //getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        unregisterReceiver(mReceiver);
-
-        //Resetear variables de Movimiento -------------------------------------------------
-        session.setDriving(false);
-        session.setExiting(false);
-        session.setEntering(false);
-        //----------------------------------------------------------------
-
-        //Remover servicio ActivityRecognized ----------------------------
-        deactivateActivityRecognition();
-        //----------------------------------------------------------------
-
-        //Cerrar sockets -------------------------------------------------
-        mSocket.disconnect();
-        mSocket.off(Jeison.SOCKET_FIND_PARKEN_SPACE, parkenSpace);
-        mSocket.off("chat message", parkenSpace);
-        //----------------------------------------------------------------
+        if(mReceiver != null)
+//        unregisterReceiver(mReceiver);
         super.onDestroy();
 
 
@@ -3924,6 +3991,7 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
     //-----------------------------------------------------------------------------
     @Override
     protected void onResume() {
+        if(googleApiClient != null)
         googleApiClient.connect();
 
         Log.d("AppEstatus", "onResume");
@@ -3939,9 +4007,9 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
 
     @Override
     protected void onStart() {
+
+        if(googleApiClient != null)
         googleApiClient.connect();
-
-
         Log.d("AppEstatus", "onStart");
 
         super.onStart();
@@ -3949,6 +4017,8 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
 
     @Override
     protected void onRestart() {
+
+        if(googleApiClient != null)
         googleApiClient.connect();
         Log.d("AppEstatus", "onRestart");
         if(vista != null){
@@ -4967,12 +5037,61 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
 
     private AlertDialog dialogPermissionRequired() {
         AlertDialog.Builder builder = new AlertDialog.Builder(activityParken);
-        builder.setTitle("Parken requiere tener acceso a tu ubicación").setMessage("Ingresa a la configuración de aplicaciones para habilitar el acceso a la ubicación de tu dispositivo.").setPositiveButton("OK", new DialogInterface.OnClickListener() {
+
+        builder.setTitle("Acceder a tu ubicación")
+                .setMessage("Ingresa a la configuración de aplicaciones para habilitar el acceso a la ubicación de tu dispositivo.")
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        return;
+
+                    }})
+                .setOnDismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialog) {
+
+                        //requestPermissionLocation();
+                        return;
+                    }
+
+                });
+
+        return builder.create();
+    }
+
+    private AlertDialog dialogPermissionLocationRequired() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(activityParken);
+
+        Log.e("Conta", String.valueOf(contAuxPermission));
+        contAuxPermission ++;
+
+        builder.setTitle("Acceder a tu ubicación")
+                .setMessage("Parken necesita acceder a tu ubicación para localizar zonas Parken.")
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
                 return;
 
-            }
+            }})
+                .setNegativeButton("Omitir", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        finish();
+                        return;
+                    }
+                })
+                .setOnDismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialog) {
+                        //requestPermissionLocation();
+                        dialogPermissionLocationRequired = null;
+                        ActivityCompat.requestPermissions(activityParken, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1);
+                        return;
+                    }
+
         });
 
         return builder.create();
@@ -5095,20 +5214,20 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
     public AlertDialog dialogConfirmLogOut() {
         AlertDialog.Builder builder = new AlertDialog.Builder(activityParken);
         builder.setTitle("Cerrar sesión")
-                .setMessage("¿Desea cerrar la sesión?")
+                .setMessage("¿Deseas cerrar la sesión?")
                 .setNegativeButton("Cancelar",new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
+                        dialog.dismiss();
+                        return;
                     }
                 })
                 .setPositiveButton("OK",
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                session.setLoggedin(false);
-                                getSharedPreferences("parken", Context.MODE_PRIVATE).edit().clear().commit();
-                                session.clearAll();
-                                finish();
-                                startActivity(new Intent(ParkenActivity.this,LoginActivity.class));
+
+                                dialog.dismiss();
+                                cerrarSesion();
                             }
                         });
 

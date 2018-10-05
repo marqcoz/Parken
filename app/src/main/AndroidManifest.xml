@@ -7,7 +7,7 @@
     <uses-permission android:name="android.permission.EXPAND_STATUS_BAR" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION"/>
+    <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
 
     <application
         android:allowBackup="true"
@@ -23,18 +23,21 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
-        <activity android:name=".LoginActivity">
-            <intent-filter>
-                <category android:name="android.intent.category.DEFAULT" />
+        <activity android:name=".LoginActivity"
+            android:configChanges="screenSize|orientation"
+            android:windowSoftInputMode="stateHidden">
                 <!--
+            <intent-filter>
             <action android:name="android.intent.action.VIEW" />
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
-                -->
             </intent-filter>
+                -->
+
         </activity>
         <activity
             android:name=".ParkenActivity"
+            android:theme="@style/SplashTheme"
             android:launchMode="singleTask">
 
             <!-- android:launchMode="singleInstance"> -->
@@ -66,11 +69,11 @@
             android:name=".RecoverPasswordActivity"
             android:label="@string/title_activity_recover_password"
             android:parentActivityName=".LoginActivity"
-            android:theme="@style/AppTheme"></activity>
+            android:theme="@style/AppTheme" />
         <activity
             android:name=".VehiculoActivity"
             android:label="@string/title_activity_vehiculo"
-            android:parentActivityName=".ParkenActivity"></activity>
+            android:parentActivityName=".ParkenActivity" />
         <activity
             android:name=".AddVehiculoActivity"
             android:label="@string/title_activity_add_vehiculo"
@@ -90,6 +93,7 @@
             <!-- android:parentActivityName=".CreateActivity" /> -->
 
         </activity>
+
         <activity
             android:name=".VehiculoInfoActivity"
             android:label="@string/title_activity_vehiculo_info"
@@ -115,15 +119,15 @@
             android:label="Sesiones Parken"
             android:parentActivityName=".ParkenActivity"
             android:theme="@style/AppTheme">
-        </activity>
 
+        </activity>
         <activity
             android:name=".PasswordActivity"
             android:parentActivityName=".EditProfileActivity" />
 
         <service android:name=".GeofenceParkenBookedTransitionsIntentService" />
         <service android:name=".GeofenceOnTheWayTransitionsIntentService" />
-        <service android:name=".GeofenceParkenSessionIntentService"/>
+        <service android:name=".GeofenceParkenSessionIntentService" />
         <service android:name=".MyFirebaseInstanceIDService">
             <intent-filter>
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
@@ -138,9 +142,17 @@
 
         <activity
             android:name=".SocketActivity"
-            android:label="@string/title_activity_socket"
-            android:theme="@style/AppTheme">
+            android:label="@string/title_activity_socket">
 
+        </activity>
+
+        <activity android:name=".SplashActivity"
+            android:theme="@style/SplashTheme">
+
+            <!--<intent-filter>
+                 <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter> -->
         </activity>
     </application>
 

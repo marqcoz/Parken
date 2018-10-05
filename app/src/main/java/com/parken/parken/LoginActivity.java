@@ -86,6 +86,8 @@ public class LoginActivity extends AppCompatActivity{
         activityLogin = this;
         //actParken = new ParkenActivity();
 
+        /*
+
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
             // Versiones con android 6.0 o superior
             if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -103,6 +105,7 @@ public class LoginActivity extends AppCompatActivity{
 
             }
         }
+        */
 
         volley = VolleySingleton.getInstance(getApplicationContext());
         fRequestQueue = volley.getRequestQueue();
@@ -118,14 +121,15 @@ public class LoginActivity extends AppCompatActivity{
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
 
-        //Metodo para esconder el teclado
-        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(create.getWindowToken(), 0);
+
         //Si se editan los TextView
         pass.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
                 if (id == EditorInfo.IME_ACTION_DONE || id == EditorInfo.IME_NULL) {
+                    
+                    correo = mail.getText().toString();
+                    contrasena = pass.getText().toString();
                     try {
                         attemptLogin();
                     } catch (InterruptedException e) {

@@ -50,17 +50,17 @@
     </string>
 
     <!-- AlertDialogs -->
-    <string name="alert_no_login_tittle">No se pudo iniciar sesión</string>
-    <string name="alert_no_login_message">Correo o contraseña incorrecta. Intente de nuevo.</string>
+    <string name="alert_no_login_tittle">Error al iniciar sesión</string>
+    <string name="alert_no_login_message">Correo o contraseña incorrecta. Intenta de nuevo.</string>
     <string name="alert_no_user_tittle">El usuario no existe</string>
     <string name="alert_no_user_message">El usuario no está registrado en Parken</string>
 
 
     <!-- Crear cuenta "CreateActivity" -->
-    <string name="label_input_data">Ingrese sus datos:</string>
+    <string name="label_input_data">Ingresa tus datos:</string>
     <string name="label_pass2">Repite contraseña</string>
     <string name="label_terms_conditions">Acepto términos y condiciones de Parken</string>
-    <string name="label_terms_conditions_missing">Debe aceptar los términos y condiciones.</string>
+    <string name="label_terms_conditions_missing">Debes aceptar los términos y condiciones.</string>
     <string name="button_next">Siguiente</string>
 
 
@@ -74,7 +74,7 @@
 
 
     <!-- Strings relacionados a Agregar vehiculo -->
-    <string name="text_agregar_carro">Ingrese sus datos:</string>
+    <string name="text_agregar_carro">Ingresa sus datos:</string>
     <string name="label_marca">Marca</string>
     <string name="label_modelo">Modelo</string>
     <string name="label_color">Color</string>

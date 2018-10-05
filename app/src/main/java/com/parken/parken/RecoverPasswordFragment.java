@@ -62,6 +62,13 @@ public class RecoverPasswordFragment extends Fragment {
     private String id;
     private String cel;
     private String em;
+    private String value;
+    private String column = "contrasena";
+
+
+    private LoginActivity loginAct = new LoginActivity();
+    private PasswordActivity passwordActivity = new PasswordActivity();
+    private RecoverPasswordActivity recoverPasswordActivity = new RecoverPasswordActivity();
 
     FirebaseAuth mAuth;
 
@@ -184,11 +191,13 @@ public class RecoverPasswordFragment extends Fragment {
                         //onConnectionFinished();
                         Log.d("VerifyID", response.toString());
                         try{
+                            showProgress(false);
 
                             if(response.getString("success").equals("1")){
                                 //Si existe el usuario en la base de datos
                                 Log.d("VerifyID", response.getString("success"));
                                 //Guardamos el mail
+                                value = response.getString("Contrasena");
                                 em = response.getString("Email");
                                 //Guardamos el cel
                                 cel = response.getString("Celular");
@@ -202,7 +211,9 @@ public class RecoverPasswordFragment extends Fragment {
                                 dialogNoUser().show();
                                 Log.d("VerifyID", response.getString("success"));
                             }
-                            showProgress(false);
+
+                            return;
+
                         } catch (JSONException e) {
                             e.printStackTrace();
                             showProgress(false);
@@ -217,6 +228,7 @@ public class RecoverPasswordFragment extends Fragment {
                         Log.d("VerifyID", "Error Respuesta en JSON: " + error.getMessage());
                         showProgress(false);
                         dialogNoConnection().show();
+                        return;
                     }
                 });
 
@@ -244,7 +256,6 @@ public class RecoverPasswordFragment extends Fragment {
             arguments.putString("id", id);
             arguments.putString("column", "contrasena");
             arguments.putString("value", cel);
-            arguments.putString("id", id);
             arguments.putString("veriId", code);
             arguments.putString("phone", phoneNumber);
             arguments.putString("phoneFormatted", phoneNumber);
@@ -307,6 +318,23 @@ public class RecoverPasswordFragment extends Fragment {
         return builder.create();
     }
 
+    public android.support.v7.app.AlertDialog dialogError(String msg) {
+        android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(getContext());
+
+        builder.setTitle("Error")
+                .setMessage(msg)
+                .setPositiveButton("OK",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+
+                            }
+
+                        });
+
+        return builder.create();
+    }
+
     public void verificarCelular(String phoneNumber){
 
         PhoneAuthProvider.getInstance().verifyPhoneNumber(
@@ -324,7 +352,7 @@ public class RecoverPasswordFragment extends Fragment {
                     public void onVerificationFailed(FirebaseException e) {
                         showProgress(false);
                         //dialogVerificationFailed().show();
-                        dialogNoConnection().show();
+                        //dialogNoConnection().show();
 
                         // This callback is invoked in an invalid request for verification is made,
                         // for instance if the the phone number format is not valid.
@@ -333,9 +361,11 @@ public class RecoverPasswordFragment extends Fragment {
                         if (e instanceof FirebaseAuthInvalidCredentialsException) {
                             // Invalid request
                             // ...
+                            dialogError(e.getMessage()).show();
                         } else if (e instanceof FirebaseTooManyRequestsException) {
                             // The SMS quota for the project has been exceeded
                             // ...
+                            dialogError(e.getMessage()).show();
                         }
 
                         // Show a message and update the UI
@@ -362,7 +392,7 @@ public class RecoverPasswordFragment extends Fragment {
     }
 
     //Esta da el acceso
-    public void signInWithPhoneAuthCredential(PhoneAuthCredential credential) {
+    public void signInWithPhoneAuthCredential(final PhoneAuthCredential credential) {
         mAuth.signInWithCredential(credential)
                 .addOnCompleteListener(getActivity(), new OnCompleteListener<AuthResult>() {
                     @Override
@@ -394,7 +424,21 @@ public class RecoverPasswordFragment extends Fragment {
 
                             */
 
-                            modifyPassword(id, em, cel, "");
+                            //modifyPassword(id, em, cel, "");
+
+                            //Llamar al activity PasswordActivity
+                            Intent password = new Intent(getActivity(), PasswordActivity.class);
+                            password.putExtra("id", id);
+                            password.putExtra("column", column);
+                            password.putExtra("value", value);
+                            password.putExtra("origin", "recoverPasswordActivity");
+                            startActivity(password);
+
+
+                            getActivity().finish();
+                            loginAct.activityLogin.finish();
+                            //passwordActivity.activityPassword.finish();
+                            recoverPasswordActivity.activityRecoverPassword.finish();
 
                         } else {
                             // Sign in failed, display a message and update the UI
