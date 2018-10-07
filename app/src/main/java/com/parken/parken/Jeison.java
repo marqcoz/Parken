@@ -30,11 +30,11 @@ public class Jeison {
     public static final String YOUR_API_KEY = "AIzaSyDkmiXSeUvTkbXgV7UYpwmhiysqkrjqcZ0";
 
     //public static final String IP = "192.168.1.123";
-    //public static final String IP = "192.168.200.32";
-    public static final String IP = "192.168.43.236";
+    //public static final String IP = "192.168.200.25";
+    //public static final String IP = "192.168.43.236";
     //public static final String IP = "192.168.15.33";
     //public static final String IP = "192.168.15.116";
-    //public static final String IP = "192.168.1.95";
+    public static final String IP = "192.168.1.95";
     //public static final String IP = "10.4.132.31";
     //public static final String IP = "100.87.199.16";
     //public static final String IP = "10.100.126.239";

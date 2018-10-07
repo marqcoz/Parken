@@ -6,6 +6,8 @@ import android.annotation.TargetApi;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
@@ -13,6 +15,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.android.volley.Request;
@@ -43,6 +46,11 @@ public class SesionActivity extends AppCompatActivity {
     private View mProgressView;
     private View mSesionesFormView;
 
+    private ImageView imgInfo;
+    private TextView txtViewMessageSesion;
+    private TextView aux;
+
+
     private TextView txtError;
 
     private ShPref session;
@@ -61,6 +69,10 @@ public class SesionActivity extends AppCompatActivity {
 
         mSesionesFormView = findViewById(R.id.sesion_form);
         mProgressView = findViewById(R.id.sesion_progress);
+
+        imgInfo = findViewById(R.id.imageViewMessageSesiones);
+        txtViewMessageSesion = findViewById(R.id.textViewMessageSesiones);
+        aux = findViewById(R.id.textView7);
 
         txtError = findViewById(R.id.textViewMessageSesiones);
 
@@ -91,23 +103,40 @@ public class SesionActivity extends AppCompatActivity {
                 //Toast.makeText(, "Item Clicked", Toast.LENGTH_LONG).show();
                 Log.d("PressSomething", tag +" - "+ item.getModeloVehiculo());
 
+                Intent dialogIntent;
                 switch (tag){
                     case "pagar":
                         Intent pagarSesion = new Intent(SesionActivity.this, SancionPagoActivity.class);
                         pagarSesion.putExtra("idSancion", item.getIdSancion());
                         pagarSesion.putExtra("espacioParken", item.getIdEspacioParken());
                         pagarSesion.putExtra("zonaParken", item.getNombreZonaParken());
+                        pagarSesion.putExtra("ubicacion", item.getDireccionEspacioParken());
                         pagarSesion.putExtra("modeloVehiculo", item.getModeloVehiculo());
                         //pagarSancion.putExtra("marcaVehiculo", item.getModeloVehiculo());
                         pagarSesion.putExtra("placaVehiculo", item.getPlacaVehiculo());
-                        pagarSesion.putExtra("tiempo", item.getHoraFinal());
+                        pagarSesion.putExtra("tiempo", item.getFechaSancion() + " - " + item.getHoraSancion());
                         pagarSesion.putExtra("monto", item.getMontoSancion());
                         pagarSesion.putExtra("origin", "SesionActivity");
+
                         startActivity(pagarSesion);
                         break;
                     case "renovar":
+
+                        dialogIntent = new Intent(getApplicationContext(), ParkenActivity.class);
+                        dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        dialogIntent.putExtra("Activity", ParkenActivity.ACTIVITY_SESION);
+                        dialogIntent.putExtra("ActivityStatus", ParkenActivity.RENEW);
+                        startActivity(dialogIntent);
+
                         break;
                     case "finalizar":
+
+                        dialogIntent = new Intent(getApplicationContext(), ParkenActivity.class);
+                        dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        dialogIntent.putExtra("Activity", ParkenActivity.ACTIVITY_SESION);
+                        dialogIntent.putExtra("ActivityStatus", ParkenActivity.FINISHED);
+                        startActivity(dialogIntent);
+
                         break;
                         default:
                             break;
@@ -157,16 +186,27 @@ public class SesionActivity extends AppCompatActivity {
                                 showProgress(false);
                                 Log.d("ObtenerSesiones", response.toString());
                                 //Mostrar dialog
-                                txtError.setText("Error al cargar las sesiones. Intenta de nuevo.");
-                                txtError.setVisibility(View.VISIBLE);
+                                aux.setVisibility(View.VISIBLE);
+                                imgInfo.setVisibility(View.VISIBLE);
+                                txtViewMessageSesion.setVisibility(View.VISIBLE);
+                                imgInfo.setImageResource(R.drawable.ic_session);
+                                txtViewMessageSesion.setText("Aún no tienes sesiones Parken. \n Las sesiones que pagues aparecerán aqui.");
                             }
 
                         } catch (JSONException e) {
                             e.printStackTrace();
                             showProgress(false);
-                            //Mostrar dialog
-                            txtError.setText("Error al cargar las sesiones. Intenta de nuevo.");
-                            txtError.setVisibility(View.VISIBLE);
+                            //Mostrar snackbar
+                            Snackbar snackbar = Snackbar.make(getWindow().getDecorView().findViewById(android.R.id.content), "Error.", Snackbar.LENGTH_LONG);
+                            View sbView = snackbar.getView();
+                            sbView.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.colorPrimaryDark));
+                            snackbar.show();
+
+                            aux.setVisibility(View.VISIBLE);
+                            imgInfo.setVisibility(View.VISIBLE);
+                            txtViewMessageSesion.setVisibility(View.VISIBLE);
+                            imgInfo.setImageResource(R.drawable.ic_no_connection);
+                            txtViewMessageSesion.setText("Error al cargar tus sesiones Parken.");
                         }
                     }
                 },
@@ -175,9 +215,18 @@ public class SesionActivity extends AppCompatActivity {
                     public void onErrorResponse(VolleyError error) {
                         showProgress(false);
                         Log.d("ObtenerSesiones", "Error Respuesta en JSON: " + error.getMessage());
-                        //Mostrar dialog
-                        txtError.setText("Error al cargar las sesiones. Intenta de nuevo.");
-                        txtError.setVisibility(View.VISIBLE);
+
+                        //Mostrar snackbar
+                        Snackbar snackbar = Snackbar.make(getWindow().getDecorView().findViewById(android.R.id.content), "Error de conexión.", Snackbar.LENGTH_LONG);
+                        View sbView = snackbar.getView();
+                        sbView.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.colorPrimaryDark));
+                        snackbar.show();
+
+                        aux.setVisibility(View.VISIBLE);
+                        imgInfo.setVisibility(View.VISIBLE);
+                        txtViewMessageSesion.setVisibility(View.VISIBLE);
+                        imgInfo.setImageResource(R.drawable.ic_no_connection);
+                        txtViewMessageSesion.setText("Error al cargar tus sesiones Parken.");
                     }
                 });
 
@@ -207,6 +256,8 @@ public class SesionActivity extends AppCompatActivity {
                     jsonSesiones.getJSONObject(i).getString("HoraFinal"),
                     jsonSesiones.getJSONObject(i).getInt("idSancion"),
                     Float.valueOf(jsonSesiones.getJSONObject(i).getString("MontoSancion")),
+                    jsonSesiones.getJSONObject(i).getString("Fecha"),
+                    jsonSesiones.getJSONObject(i).getString("Hora"),
                     Float.valueOf(jsonSesiones.getJSONObject(i).getString("Monto")),
                     //jsonSesiones.getJSONObject(i).getInt("Monto"),
                     jsonSesiones.getJSONObject(i).getString("Tiempo"),

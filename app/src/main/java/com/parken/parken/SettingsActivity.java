@@ -20,6 +20,7 @@ import android.preference.RingtonePreference;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.MenuItem;
 
 import java.util.ArrayList;
@@ -80,18 +81,24 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
                 for(ResolveInfo info: activities){
                     final String nameApp = info.loadLabel(packageManager).toString();
-                    if(!nameApp.equals("Uber")){
+
+                    if(nameApp.equals("Waze") || nameApp.equals("Maps")){
                         final CheckBoxPreference checkBoxPref = new CheckBoxPreference(getActivity());
                         appicaciones.add(nameApp);
                         checkBoxPref.setTitle(nameApp);
                         checkBoxPref.setIcon(info.loadIcon(packageManager));
                         checkBoxPref.setKey(nameApp);
 
+                        Log.e("Settings", session.getGPS() +  " " + nameApp);
+
+
+                        /*
                         if(session.getGPS().equals(nameApp)){
-                            checkBoxPref.setChecked(true);
+                           checkBoxPref.setChecked(true);
                         }else {
                             checkBoxPref.setChecked(false);
                         }
+                        */
 
                         category.addPreference(checkBoxPref);
                         checkBoxPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -113,6 +120,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
             setPreferenceScreen(screen);
             charApplicaciones = appicaciones.toArray(new CharSequence[appicaciones.size()]);
+            clearCheckBoxPref();
             checkApps();
 
 
@@ -137,6 +145,9 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             boolean appInstalled = false;
             for(int g = 0; g < charApplicaciones.length; g++){
                 if(charApplicaciones[g].equals(session.getGPS())){
+                    CheckBoxPreference d = (CheckBoxPreference) findPreference(charApplicaciones[g]);
+                    session.setGPS(charApplicaciones[g].toString());
+                    d.setChecked(true);
                     appInstalled = true;
                 }
             }

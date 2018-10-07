@@ -15,6 +15,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -42,6 +43,9 @@ public class InformationActivity extends AppCompatActivity {
     private TextView mail;
     private TextView pass;
     private TextView cel;
+    private TextView msgNoProfile;
+
+    private ImageView imgProfile;
 
     private LinearLayout linear;
 
@@ -77,6 +81,9 @@ public class InformationActivity extends AppCompatActivity {
         nested = findViewById(R.id.nested_form_profile);
 
         linear = findViewById(R.id.linear_profile);
+
+        imgProfile = findViewById(R.id.imageView2);
+        msgNoProfile = findViewById(R.id.textViewMessageNoProfile);
 
         nombre = findViewById(R.id.constraintNombre);
         apellido = findViewById(R.id.constraintApellido);
@@ -193,6 +200,7 @@ public class InformationActivity extends AppCompatActivity {
 
                             }else{
                                 showProgress(false);
+
                                 messageFailed();
                             }
 
@@ -218,19 +226,25 @@ public class InformationActivity extends AppCompatActivity {
     }
 
     public void messageFailed(){
-        Snackbar snackbar = Snackbar.make(this.getWindow().getDecorView().findViewById(android.R.id.content), "No se puede realizar la conexión con el servidor.", Snackbar.LENGTH_LONG);
+        Snackbar snackbar = Snackbar.make(this.getWindow().getDecorView().findViewById(android.R.id.content), "Error de conexión.", Snackbar.LENGTH_LONG);
         View sbView = snackbar.getView();
         sbView.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.colorPrimaryDark));
         snackbar.show();
-        nombre.setEnabled(false);
+
+        imgProfile.getLayoutParams().height = 120;
+        imgProfile.getLayoutParams().width = 120;
+        imgProfile.setImageResource(R.drawable.ic_no_profile);
+        msgNoProfile.setVisibility(View.VISIBLE);
+        msgNoProfile.setText("Error al cargar tu perfil.");
+        nombre.setVisibility(View.GONE);
         name.setText("");
-        apellido.setEnabled(false);
+        apellido.setVisibility(View.GONE);
         last.setText("");
-        correo.setEnabled(false);
+        correo.setVisibility(View.GONE);
         mail.setText("");
-        celular.setEnabled(false);
+        celular.setVisibility(View.GONE);
         cel.setText("");
-        contrasena.setEnabled(false);
+        contrasena.setVisibility(View.GONE);
         pass.setText("");
         //nombre.setVisibility(View.INVISIBLE);
 

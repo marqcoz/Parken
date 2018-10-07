@@ -9,6 +9,8 @@ public class Sesion {
     private String fechaFinal;
     private int idSancion;
     private float montoSancion;
+    private String fechaSancion;
+    private String horaSancion;
     private float monto;
     private String tiempo;
     private String estatus;
@@ -24,6 +26,7 @@ public class Sesion {
 
     public Sesion(int idSesion, String fechaInicio, String fechaFinal,
                   String horaInicio, String horaFinal, int idSancion, float montoSancion,
+                  String fechaSancion, String horaSancion,
                   float monto, String tiempo, String estatus, int idVehiculo,
                   String marcaVehiculo, String modeloVehiculo, String placaVehiculo,
                   int idEspacioParken, String direccionEspacioParken, int idZonaParken,
@@ -36,6 +39,8 @@ public class Sesion {
         this.horaFinal = horaFinal;
         this.idSancion = idSancion;
         this.montoSancion = montoSancion;
+        this.fechaSancion = fechaSancion;
+        this.horaSancion = horaSancion;
         this.monto = monto;
         this.tiempo = tiempo;
         this.estatus = estatus;
@@ -184,6 +189,22 @@ public class Sesion {
 
     public void setNombreZonaParken(String nombreZonaParken) {
         this.nombreZonaParken = nombreZonaParken;
+    }
+
+    public String getFechaSancion() {
+        return fechaSancion;
+    }
+
+    public void setFechaSancion(String fechaSancion) {
+        this.fechaSancion = fechaSancion;
+    }
+
+    public String getHoraSancion() {
+        return horaSancion;
+    }
+
+    public void setHoraSancion(String horaSancion) {
+        this.horaSancion = horaSancion;
     }
 
     public int getIdSancion() {

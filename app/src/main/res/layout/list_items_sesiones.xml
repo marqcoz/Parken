@@ -5,8 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="8dp"
-    card_view:cardCornerRadius="@dimen/cardview_default_radius"
-    card_view:cardElevation="@dimen/cardview_default_elevation"
+    card_view:cardCornerRadius="4dp"
+    card_view:cardElevation="4dp"
     card_view:cardUseCompatPadding="true">
 
     <LinearLayout
@@ -214,12 +214,12 @@
 
                 <LinearLayout
                     android:id="@+id/linearLayoutEstatus"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="0dp"
-                    android:layout_marginBottom="8dp"
-                    android:layout_marginEnd="2dp"
                     android:layout_marginTop="8dp"
-                    android:gravity="center_vertical"
+                    android:layout_marginEnd="2dp"
+                    android:layout_marginBottom="8dp"
+                    android:gravity="left|center_vertical"
                     android:orientation="horizontal"
                     card_view:layout_constraintBottom_toTopOf="@+id/linearLayoutDireccion"
                     card_view:layout_constraintEnd_toEndOf="parent"
@@ -331,6 +331,15 @@
             </android.support.constraint.ConstraintLayout>
 
         </LinearLayout>
+
+        <View
+            android:id="@+id/viewLine"
+            android:layout_width="wrap_content"
+            android:layout_height="1dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:background="#dfbdbdbd"
+            android:visibility="gone" />
         <!-- Acciones -->
         <android.support.constraint.ConstraintLayout
             android:id="@+id/linearLayoutPagar"
@@ -346,6 +355,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:background="@android:color/transparent"
+                android:paddingLeft="8dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
                 android:tag="pagar"
                 android:text="Pagar"
                 android:textColor="@color/colorPrimaryDark"
@@ -362,6 +374,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:background="@android:color/transparent"
+                android:paddingLeft="8dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
                 android:tag="renovar"
                 android:text="Renovar"
                 android:textColor="@color/greenPass"
@@ -376,8 +391,11 @@
 
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
+                android:layout_marginRight="8dp"
                 android:background="@android:color/transparent"
+                android:paddingTop="8dp"
+                android:paddingRight="8dp"
+                android:paddingBottom="8dp"
                 android:tag="finalizar"
                 android:text="Finalizar"
                 android:textColor="@color/colorPrimaryDark"
@@ -385,8 +403,7 @@
                 card_view:layout_constraintBottom_toBottomOf="parent"
                 card_view:layout_constraintEnd_toEndOf="parent"
                 card_view:layout_constraintHorizontal_chainStyle="packed"
-                card_view:layout_constraintTop_toTopOf="parent"
-                card_view:layout_constraintVertical_bias="0.0" />
+                card_view:layout_constraintTop_toTopOf="parent" />
 
         </android.support.constraint.ConstraintLayout>
     </LinearLayout>

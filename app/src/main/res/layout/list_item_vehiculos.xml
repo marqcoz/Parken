@@ -16,10 +16,10 @@
         android:layout_centerVertical="true"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
-        app:srcCompat="@mipmap/ic_car_round" />
+        app:srcCompat="@mipmap/ic_carrito" />
 
     <TextView
-        android:id="@+id/tv_name"
+        android:id="@+id/tv_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
@@ -30,11 +30,11 @@
         android:textAppearance="?attr/textAppearanceListItem" />
 
     <TextView
-        android:id="@+id/tv_title"
+        android:id="@+id/tv_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/tv_name"
-        android:layout_below="@+id/tv_name"
+        android:layout_alignLeft="@+id/tv_title"
+        android:layout_below="@+id/tv_title"
         android:layout_marginTop="4dp"
         android:text="Cargo"
         tools:text="CEO" />
@@ -43,8 +43,8 @@
         android:id="@+id/tv_company"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/tv_name"
-        android:layout_below="@+id/tv_title"
+        android:layout_alignLeft="@+id/tv_title"
+        android:layout_below="@+id/tv_name"
         android:layout_marginBottom="12dp"
         android:layout_marginTop="4dp"
         android:text="Compañía"

@@ -159,7 +159,9 @@ public class AddVehiculoActivity extends AppCompatActivity {
         // Store values at the time of the add.
         marcaString = marca.getText().toString().trim();
         modeloString = modelo.getText().toString().trim();
-        placaString = placa.getText().toString().trim().replaceAll(" ","").replaceAll("-","").toUpperCase();
+        placaString = placa.getText().toString().trim().replaceAll("[^a-zA-Z0-9]", "").toUpperCase();
+        //placaString = placa.getText().toString().trim().replaceAll(" ","").replaceAll("-","").toUpperCase();
+
 
         boolean cancel = false;
         View focusView = null;

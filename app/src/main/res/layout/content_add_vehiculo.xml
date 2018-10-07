@@ -16,9 +16,9 @@
         android:id="@+id/imageView"
         android:layout_width="64dp"
         android:layout_height="64dp"
-        android:layout_marginBottom="8dp"
         android:layout_marginTop="8dp"
-        app:srcCompat="@mipmap/ic_car_round" />
+        android:layout_marginBottom="8dp"
+        app:srcCompat="@mipmap/ic_carrito" />
 
     <android.support.design.widget.TextInputLayout
         android:id="@+id/textInputLayout2"

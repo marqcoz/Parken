@@ -22,7 +22,35 @@
         android:fitsSystemWindows="true"
         android:theme="@style/AppTheme"
         app:headerLayout="@layout/nav_header_parken"
-        app:menu="@menu/activity_parken_drawer" />
+        app:menu="@menu/activity_parken_drawer">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:background="@android:color/transparent"
+            android:clickable="true"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/btnCerrarSesion"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:background="@android:color/transparent"
+                android:drawablePadding="8dp"
+                android:gravity="center_vertical"
+                android:paddingStart="16dp"
+                android:text="Cerrar sesión"
+                android:textAlignment="gravity"
+                android:textAllCaps="false"
+                android:textColor="@color/common_google_signin_btn_text_dark_focused"
+                android:theme="@style/AppTheme" />
+
+        </LinearLayout>
+
+    </android.support.design.widget.NavigationView>
+
+
 
 
 </android.support.v4.widget.DrawerLayout>

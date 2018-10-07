@@ -59,14 +59,19 @@ public class SancionAdapter extends RecyclerView.Adapter<SancionAdapter.ViewHold
             holder.vehiculo.setText(carro);
             String est = sancion.get(position).getEstatus();
             holder.estatus.setText(est);
+            holder.line.setVisibility(View.VISIBLE);
+
+
             if(est.equals("PAGADA")){
                 holder.estatus.setTextColor(Color.argb(255,46,204,113));
                 holder.statusIcon.setImageResource(R.drawable.ic_check);
                 holder.pago.setVisibility(View.GONE);
+                holder.line.setVisibility(View.GONE);
             }else {
                 holder.statusIcon.setImageResource(R.drawable.ic_alert);
                 holder.estatus.setTextColor(Color.argb(255,52,73,94));
                 holder.pago.setVisibility(View.VISIBLE);
+                holder.line.setVisibility(View.VISIBLE);
             }
 
 
@@ -98,6 +103,8 @@ public class SancionAdapter extends RecyclerView.Adapter<SancionAdapter.ViewHold
             public TextView tiempo;
             public Button action;
 
+            public View line;
+
 
 
             public ViewHolder(View itemView) {
@@ -115,6 +122,8 @@ public class SancionAdapter extends RecyclerView.Adapter<SancionAdapter.ViewHold
 
                 pago = itemView.findViewById(R.id.linearLayoutPagar);
                 action = (Button)itemView.findViewById(R.id.buttonAction);
+
+                line = itemView.findViewById(R.id.viewLine);
 
                 //action.setOnClickListener(this);
                 //itemView.setOnClickListener(this);

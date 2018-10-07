@@ -73,7 +73,9 @@ public class SesionAdapter extends RecyclerView.Adapter<SesionAdapter.ViewHolder
             holder.estatus.setTextColor(Color.argb(255,46,204,113));
             holder.statusIcon.setImageResource(R.drawable.ic_check);
             holder.actions.setVisibility(View.GONE);
+            holder.line.setVisibility(View.GONE);
         }else {
+            holder.line.setVisibility(View.VISIBLE);
             if(est.equals("SANCIONADA")){
                 holder.statusIcon.setImageResource(R.drawable.ic_alert_red);
                 holder.estatus.setTextColor(Color.argb(255,244,67,54));
@@ -124,6 +126,8 @@ public class SesionAdapter extends RecyclerView.Adapter<SesionAdapter.ViewHolder
         public TextView espacio;
         public TextView direccion;
 
+        public View line;
+
 
         public LinearLayout minutos;
         public ConstraintLayout actions;
@@ -152,6 +156,8 @@ public class SesionAdapter extends RecyclerView.Adapter<SesionAdapter.ViewHolder
             pagar = (Button)itemView.findViewById(R.id.buttonActionPagar);
             renovar = (Button)itemView.findViewById(R.id.buttonActionRenovar);
             finalizar = (Button)itemView.findViewById(R.id.buttonActionFinalizar);
+
+            line = itemView.findViewById(R.id.viewLine);
 
 
             //action.setOnClickListener(this);

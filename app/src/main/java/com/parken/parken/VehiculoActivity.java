@@ -8,6 +8,8 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -42,6 +44,7 @@ public class VehiculoActivity extends AppCompatActivity {
     private View mAddNewCarFormView;
     TextView txtViewMessageCars;
     TextView aux;
+    FloatingActionButton fab;
     ImageView imgInfo;
 
 
@@ -76,7 +79,7 @@ public class VehiculoActivity extends AppCompatActivity {
         session = new ShPref(activityVehiculo);
         showProgress(true);
         sendCar(session.infoId());
-        FloatingActionButton fab = findViewById(R.id.floatingActionButtonAddCar);
+        fab = findViewById(R.id.floatingActionButtonAddCar);
         fab.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -115,6 +118,7 @@ public class VehiculoActivity extends AppCompatActivity {
                                 aux.setVisibility(View.GONE);
                                 txtViewMessageCars.setVisibility(View.GONE);
                                 imgInfo.setVisibility(View.GONE);
+                                fab.setVisibility(View.VISIBLE);
                                 Log.d("AddCarActivity", response.toString());
                                 Log.d("AddCarActivity", response.getString("Vehiculos"));
                                 jsonVehiculos = response.getString("Vehiculos");
@@ -143,23 +147,44 @@ public class VehiculoActivity extends AppCompatActivity {
                                 session.setVehiculos("");
                                 aux.setVisibility(View.VISIBLE);
                                 imgInfo.setVisibility(View.VISIBLE);
+                                fab.setVisibility(View.VISIBLE);
                                 txtViewMessageCars.setVisibility(View.VISIBLE);
                                 imgInfo.setImageResource(R.drawable.ic_add_blue);
-                                txtViewMessageCars.setText("Aún no tienes vehículos registrados. Agrega uno.");
+                                txtViewMessageCars.setText("Aún no tienes vehículos registrados. \n Agrega uno.");
 
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
+                            //Mostrar snackbar
+                            Snackbar snackbar = Snackbar.make(getWindow().getDecorView().findViewById(android.R.id.content), "Error.", Snackbar.LENGTH_LONG);
+                            View sbView = snackbar.getView();
+                            sbView.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.colorPrimaryDark));
+                            snackbar.show();
+
+                            fab.setVisibility(View.GONE);
+                            aux.setVisibility(View.VISIBLE);
+                            imgInfo.setVisibility(View.VISIBLE);
+                            txtViewMessageCars.setVisibility(View.VISIBLE);
+                            imgInfo.setImageResource(R.drawable.ic_no_connection);
+                            txtViewMessageCars.setText("Error al cargar tus vehículos.");
                         }
+
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         showProgress(false);
-                        dialogCarsFailed().show();
+
+                        //Mostrar snackbar
+                        Snackbar snackbar = Snackbar.make(getWindow().getDecorView().findViewById(android.R.id.content), "Error de conexión.", Snackbar.LENGTH_LONG);
+                        View sbView = snackbar.getView();
+                        sbView.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.colorPrimaryDark));
+                        snackbar.show();
+                        //dialogCarsFailed().show();
                         //No se puede realizar la conexión, hay que escribir en el contenedor:
                         //Ocurrió un problem al cargar tus vehículos.
+                        fab.setVisibility(View.GONE);
                         aux.setVisibility(View.VISIBLE);
                         imgInfo.setVisibility(View.VISIBLE);
                         txtViewMessageCars.setVisibility(View.VISIBLE);

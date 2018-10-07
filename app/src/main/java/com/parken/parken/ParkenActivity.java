@@ -23,6 +23,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.CheckBoxPreference;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -179,6 +180,7 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
     public static final String PARKEN_LOAD = "ParkenLoading";
     public static final String ACTIVITY_ZONA_PARKEN = "ZonaParkenActivity";
     public static final String ACTIVITY_SESION_PARKEN = "SesionParkenActivity";
+    public static final String ACTIVITY_SESION = "SesionActivity";
     public static final String ACTIVITY_PAY_RECEIPT = "SancionPagoActivity";
     public static final String METHOD_ON_LOCATION_CHANGED = "onLocationChanged";
     public static final String INTENT_GEOFENCE_ON_THE_WAY = "GeofenceOnTheWay";
@@ -200,6 +202,9 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
     public static final String NOTIFICATIONS = "notificationcenter";
     public static final String MOVEMENTS = "activityrecognized";
     public static final String NOTIFICATION_EP_BOOKED_CANCELED = "epreservadocancelado";
+
+    public static final String RENEW = "renovar";
+    public static final String FINISHED = "finalizar";
 
     private String STATE_ON_THE_WAY;
     private String STATE_PAY_PARKEN;
@@ -229,6 +234,7 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
     private LinearLayout alertLayout;
 
     private FloatingActionButton find;
+    private FloatingActionButton center;
 
     private Button espacioParken;
     private Button navegar;
@@ -236,6 +242,8 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
     private Button renovar;
     private Button finalizar;
     private Button payReceipt;
+    private Button logout;
+
 
     private ConstraintLayout profile;
     private ConstraintLayout alertReceipt;
@@ -470,6 +478,10 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
 
         payReceipt = findViewById(R.id.btnPayReceipt);
 
+        center = findViewById(R.id.floatingCenterMap);
+
+        logout = findViewById(R.id.btnCerrarSesion);
+
         mParkenFormView = findViewById(R.id.map_form);
         mProgressView = findViewById(R.id.parken_progress);
         infoLay = findViewById(R.id.InfoLayout);
@@ -601,45 +613,8 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
         renovar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //Proceso de renovacion
-                //Abrir SesionPagoActivity
-                //No se pone el timer
-                //No cambia el espacio parken
-                //No se cambia el vehiculo
-                //La fecha final debe ser mayor a la comprada anteriormente
-                //Si exito, entonces se actualiza la sesion parken
-                //Se modifica unicamente el monto se le suma lo anterior
-                //Se actualiza el tiempo final
-                //Se elimina la actividad que manda una notificación
-                //Se crea una nueva actividad que envie la notificación a la hora final
-                //Se actualiza el timer, con el nuevo tiempo comprado
-                //Se actualiza la vista de SESSION_ACTIVE
-                //Si falla, no pasa nada, se regresa.
 
-                Intent payParken = new Intent(ParkenActivity.this, SesionParkenActivity.class);
-                payParken.putExtra("Activity", SesionParkenActivity.ACTIVITY_SESION);
-                payParken.putExtra("ActivityExtra", RELOAD);
-                if(espacioParkenJson != null){
-                    Log.d("test", espacioParkenJson);
-                }else {
-                    Log.d("test", "NULL");
-                }
-
-                payParken.putExtra("jsonEspacioParken", espacioParkenJson);
-                payParken.putExtra("idSesionParken", idSesionParken);
-                payParken.putExtra("paypal", idPayPal);
-                payParken.putExtra("FechaFinal", fechaFinal);
-                payParken.putExtra("Monto", montoFinal);
-                payParken.putExtra("TiempoEnMinutos", tiempoEnMinutos);
-                payParken.putExtra("idVehiculo", idVehiculo);
-                payParken.putExtra("ModeloVehiculo", modeloVehiculo);
-                payParken.putExtra("PlacaVehiculo", placaVehiculo);
-                payParken.putExtra("selectedMin", fechaPago.get(Calendar.MINUTE));
-                payParken.putExtra("selectedHour", fechaPago.get(Calendar.HOUR_OF_DAY));
-                payParken.putExtra("selectedYear", fechaPago.get(Calendar.YEAR));
-                payParken.putExtra("selectedMonth", fechaPago.get(Calendar.MONTH));
-                payParken.putExtra("selectedDay", fechaPago.get(Calendar.DAY_OF_MONTH));
-                startActivity(payParken);
+                renovarSesion();
 
 
             }
@@ -686,6 +661,27 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
                 startActivity(new Intent(ParkenActivity.this, InformationActivity.class));
             }
         });
+
+        logout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+                drawer.closeDrawer(GravityCompat.START);
+                dialogConfirmLogOut().show();
+            }
+        });
+
+        center.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                CameraUpdate miUbicacion = CameraUpdateFactory.newLatLngZoom(new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude()),15);
+                mMap.animateCamera(miUbicacion);
+                center.setVisibility(View.GONE);
+
+            }
+        });
+
 
     }
 
@@ -1624,6 +1620,12 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
         //mMap.moveCamera(cameraUpdate);
 
         Log.d("OnMapParkenReady", "Recarga");
+        mMap.setOnCameraMoveStartedListener(new GoogleMap.OnCameraMoveStartedListener() {
+            @Override
+            public void onCameraMoveStarted(int i) {
+                center.setVisibility(View.VISIBLE);
+            }
+        });
 
         readyMap();
         mapaReady = 1;
@@ -1674,7 +1676,12 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
             mMap.setMyLocationEnabled(true);
             mMap.clear();
             UiSettings uiSettings = mMap.getUiSettings();
+            uiSettings.setMyLocationButtonEnabled(false);
             uiSettings.setMapToolbarEnabled(false);
+            uiSettings.setZoomControlsEnabled(false);
+            uiSettings.setCompassEnabled(false);
+            uiSettings.setIndoorLevelPickerEnabled(false);
+            uiSettings.setTiltGesturesEnabled(false);
 
             if(lastLocation != null){
                 Log.d("readyMap", "LastLocation");
@@ -2321,32 +2328,54 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
 
             Uri intentUri=null;
 
-            switch (session.getGPS()){
-                case "Waze":
-                    intentUri = Uri.parse(String.format("waze://?ll=%f,%f&navigate=yes", latitud, longitud));
-                    Intent intent = new Intent(Intent.ACTION_VIEW, intentUri);
-                    startActivity(intent);
-                    break;
+            //dialogEmpty(session.getGPS()).show();
 
-                case "Maps":
-                    intentUri = Uri.parse(String.format("google.navigation:q=%f,%f&mode=d",latitud,longitud));
-                    mapIntent = new Intent(Intent.ACTION_VIEW, intentUri);
-                    mapIntent.setPackage("com.google.android.apps.maps");
-                    startActivity(mapIntent);
-                    break;
+            try {
 
-
-                    default:
-                        String geoLabel = "geo:<lat>,<lon>?q=<lat>,<lon>(label)";
-                        String zoom = "16";
-                        //Uri location = Uri.parse("geo:0,0?q=1600+Amphitheatre+Parkway,+Mountain+View,+California");
-                        intentUri = Uri.parse(geoLabel.replace("lat",String.valueOf(latitud)).replace("lon", String.valueOf(longitud)).replace("label", label));
-                        intent = new Intent(Intent.ACTION_VIEW, intentUri);
+                switch (session.getGPS()){
+                    case "Waze":
+                        intentUri = Uri.parse(String.format("waze://?ll=%f,%f&navigate=yes", latitud, longitud));
+                        Intent intent = new Intent(Intent.ACTION_VIEW, intentUri);
                         startActivity(intent);
                         break;
 
+                    case "Maps":
+
+                            intentUri = Uri.parse(String.format("google.navigation:q=%f,%f&mode=d", latitud, longitud));
+                            mapIntent = new Intent(Intent.ACTION_VIEW, intentUri);
+                            mapIntent.setPackage("com.google.android.apps.maps");
+                            startActivity(mapIntent);
+
+
+                        break;
+
+                        default:
+
+                            abrirIntentGPS(latitud, longitud, label);
+
+                            break;
+
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                //abrirIntentGPS(latitud, longitud, label);
+                dialogAlertNoGPS().show();
+
             }
         }
+    }
+
+    public void abrirIntentGPS(Double latitud, Double longitud, String label){
+
+        Uri intentUri = null;
+        String geoLabel = "geo:<lat>,<lon>?q=<lat>,<lon>(label)";
+        String zoom = "16";
+        //Uri location = Uri.parse("geo:0,0?q=1600+Amphitheatre+Parkway,+Mountain+View,+California");
+        intentUri = Uri.parse(geoLabel.replace("lat",String.valueOf(latitud)).replace("lon", String.valueOf(longitud)).replace("label", label));
+        Intent intent = new Intent(Intent.ACTION_VIEW, intentUri);
+        startActivity(intent);
+
     }
 
     public void cerrarSesion(){
@@ -2384,6 +2413,50 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    public void renovarSesion(){
+
+        //Proceso de renovacion
+        //Abrir SesionPagoActivity
+        //No se pone el timer
+        //No cambia el espacio parken
+        //No se cambia el vehiculo
+        //La fecha final debe ser mayor a la comprada anteriormente
+        //Si exito, entonces se actualiza la sesion parken
+        //Se modifica unicamente el monto se le suma lo anterior
+        //Se actualiza el tiempo final
+        //Se elimina la actividad que manda una notificación
+        //Se crea una nueva actividad que envie la notificación a la hora final
+        //Se actualiza el timer, con el nuevo tiempo comprado
+        //Se actualiza la vista de SESSION_ACTIVE
+        //Si falla, no pasa nada, se regresa.
+
+        Intent payParken = new Intent(ParkenActivity.this, SesionParkenActivity.class);
+        payParken.putExtra("Activity", SesionParkenActivity.ACTIVITY_SESION);
+        payParken.putExtra("ActivityExtra", RELOAD);
+        if(espacioParkenJson != null){
+            Log.d("test", espacioParkenJson);
+        }else {
+            Log.d("test", "NULL");
+        }
+
+        payParken.putExtra("jsonEspacioParken", espacioParkenJson);
+        payParken.putExtra("idSesionParken", idSesionParken);
+        payParken.putExtra("paypal", idPayPal);
+        payParken.putExtra("FechaFinal", fechaFinal);
+        payParken.putExtra("Monto", montoFinal);
+        payParken.putExtra("TiempoEnMinutos", tiempoEnMinutos);
+        payParken.putExtra("idVehiculo", idVehiculo);
+        payParken.putExtra("ModeloVehiculo", modeloVehiculo);
+        payParken.putExtra("PlacaVehiculo", placaVehiculo);
+        payParken.putExtra("selectedMin", fechaPago.get(Calendar.MINUTE));
+        payParken.putExtra("selectedHour", fechaPago.get(Calendar.HOUR_OF_DAY));
+        payParken.putExtra("selectedYear", fechaPago.get(Calendar.YEAR));
+        payParken.putExtra("selectedMonth", fechaPago.get(Calendar.MONTH));
+        payParken.putExtra("selectedDay", fechaPago.get(Calendar.DAY_OF_MONTH));
+        startActivity(payParken);
+
     }
 
     public void setParkenSpaceBooked(int ep, String jsonEP){
@@ -4294,6 +4367,30 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
 
                         break;
 
+                    case ACTIVITY_SESION:
+
+                        switch (intent.getStringExtra("ActivityStatus")){
+
+                            case RENEW:
+
+                                renovarSesion();
+
+                                break;
+
+                            case FINISHED:
+
+                                dialogFinishParken().show();
+
+                                break;
+
+                                default:
+
+                                    break;
+
+                        }
+
+                        break;
+
                     case NOTIFICATIONS:
 
                         switch (intent.getStringExtra("ActivityStatus")){
@@ -4443,13 +4540,13 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
     public boolean onNavigationItemSelected(MenuItem item) {
         int id = item.getItemId();
 
+        /*
         if (id == R.id.nav_pay_sanction) {
-            //finish();
             startActivity(new Intent(ParkenActivity.this,SancionPagoActivity.class));
-        } else if (id == R.id.nav_cars) {
+        } else */
+        if (id == R.id.nav_cars) {
             startActivity(new Intent(ParkenActivity.this,VehiculoActivity.class));
-        } else if (id == R.id.nav_pays) {
-
+        //} else if (id == R.id.nav_pays) {
 
         } else if (id == R.id.nav_session) {
             startActivity(new Intent(ParkenActivity.this,SesionActivity.class));
@@ -4460,9 +4557,12 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
         } else if (id == R.id.nav_settings) {
             startActivity(new Intent(ParkenActivity.this,SettingsActivity.class));
 
-        } else if (id == R.id.log_out) {
+        }
+        /*
+        else if (id == R.id.log_out) {
             dialogConfirmLogOut().show();
         }
+        */
 
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -5245,6 +5345,21 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
                             }
                         });
         return builder.create();
+    }
+
+    public AlertDialog dialogAlertNoGPS(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Navegador GPS")
+                .setMessage("El navegador GPS seleccionado no esta instalado en el dispositivo. Selecciona otro en el menú Configuración o ingresa la dirección manualmente.")
+                .setPositiveButton("OK",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
+        return builder.create();
+
     }
 
 

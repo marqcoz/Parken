@@ -6,13 +6,17 @@ import android.annotation.TargetApi;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.android.volley.Request;
@@ -33,6 +37,8 @@ public class SancionActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private GridLayoutManager gridLayoutManager;
+
+    private RecyclerView.LayoutManager layoutManager;
     public SancionAdapter adapterSancion;
     private List<Sancion> sancion_list;
 
@@ -42,6 +48,10 @@ public class SancionActivity extends AppCompatActivity {
 
     private View mProgressView;
     private View mSancionesFormView;
+
+    private ImageView imgInfo;
+    private TextView txtViewMessageSancion;
+    private TextView aux;
 
     private TextView txtError;
 
@@ -62,12 +72,17 @@ public class SancionActivity extends AppCompatActivity {
         mSancionesFormView = findViewById(R.id.sancion_form);
         mProgressView = findViewById(R.id.sancion_progress);
 
+        imgInfo = findViewById(R.id.imageViewMessageSanciones);
+        txtViewMessageSancion = findViewById(R.id.textViewMessageSanciones);
+        aux = findViewById(R.id.textViewAux);
+
         txtError = findViewById(R.id.textViewMessageSanciones);
 
         session = new ShPref(this);
 
         recyclerView = (RecyclerView) findViewById(R.id.recyclerview);
         sancion_list  = new ArrayList<>();
+        recyclerView.setHasFixedSize(true);
 
         try {
             showProgress(true);
@@ -77,8 +92,14 @@ public class SancionActivity extends AppCompatActivity {
         }
         //load_data_from_server(0);
 
-        gridLayoutManager = new GridLayoutManager(this,1);
-        recyclerView.setLayoutManager(gridLayoutManager);
+        //gridLayoutManager = new GridLayoutManager(this,1);
+        //recyclerView.setLayoutManager(gridLayoutManager);r
+        layoutManager = new LinearLayoutManager(this);
+        ((LinearLayoutManager) layoutManager).setSmoothScrollbarEnabled(true);
+        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setVerticalFadingEdgeEnabled(true);
+
+        //recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false, 3));
 
         adapterSancion = new SancionAdapter(this, sancion_list, new SancionAdapter.OnItemClickListener() {
             @Override
@@ -94,6 +115,7 @@ public class SancionActivity extends AppCompatActivity {
                 pagarSancion.putExtra("tiempo", item.getTiempo() );
                 pagarSancion.putExtra("monto", item.getMonto());
                 pagarSancion.putExtra("origin", "SancionActivity");
+
                 startActivity(pagarSancion);
 
                 //Toast.makeText(, "Item Clicked", Toast.LENGTH_LONG).show();
@@ -108,7 +130,7 @@ public class SancionActivity extends AppCompatActivity {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
 
-                if(gridLayoutManager.findLastCompletelyVisibleItemPosition() == sancion_list.size()-1){
+               // if(gridLayoutManager.findLastCompletelyVisibleItemPosition() == sancion_list.size()-1){
                     //try {
                         //obtenerSanciones(sancion_list.get(sancion_list.size()-1).getIdSancion());
                     //} catch (JSONException e) {
@@ -116,7 +138,7 @@ public class SancionActivity extends AppCompatActivity {
                     //}
                     //obtenerSanciones(sancion_list.get(sancion_list.size()-1).getIdSancion());
                     //load_data_from_server(data_list.get(data_list.size()-1).getId());
-                }
+               // }
 
             }
         });
@@ -149,16 +171,28 @@ public class SancionActivity extends AppCompatActivity {
                                 showProgress(false);
                                 Log.d("ObtenerSanciones", response.toString());
                                 //Mostrar dialog
-                                txtError.setText("Error al cargar las sanciones. Intenta de nuevo.");
-                                txtError.setVisibility(View.VISIBLE);
+                                imgInfo.setVisibility(View.VISIBLE);
+                                txtViewMessageSancion.setVisibility(View.VISIBLE);
+                                aux.setVisibility(View.VISIBLE);
+                                imgInfo.setImageResource(R.drawable.ic_no_receipt);
+                                txtViewMessageSancion.setText("¡Felicidades! \nNo tienes sanciones.");
                             }
 
                         } catch (JSONException e) {
                             e.printStackTrace();
                             showProgress(false);
-                            //Mostrar dialog
-                            txtError.setText("Error al cargar las sanciones. Intenta de nuevo.");
-                            txtError.setVisibility(View.VISIBLE);
+                            //Mostrar snackbar
+                            //Mostrar snackbar
+                            Snackbar snackbar = Snackbar.make(getWindow().getDecorView().findViewById(android.R.id.content), "Error", Snackbar.LENGTH_LONG);
+                            View sbView = snackbar.getView();
+                            sbView.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.colorPrimaryDark));
+                            snackbar.show();
+
+                            imgInfo.setVisibility(View.VISIBLE);
+                            imgInfo.setImageResource(R.drawable.ic_no_connection);
+                            txtViewMessageSancion.setVisibility(View.VISIBLE);
+                            aux.setVisibility(View.VISIBLE);
+                            txtViewMessageSancion.setText("Error al cargar las sanciones.");
                         }
                     }
                 },
@@ -167,9 +201,18 @@ public class SancionActivity extends AppCompatActivity {
                     public void onErrorResponse(VolleyError error) {
                         showProgress(false);
                         Log.d("ObtenerSanciones", "Error Respuesta en JSON: " + error.getMessage());
-                        //Mostrar dialog
-                        txtError.setText("Error al cargar las sanciones. Intenta de nuevo.");
-                        txtError.setVisibility(View.VISIBLE);
+
+                        //Mostrar snackbar
+                        Snackbar snackbar = Snackbar.make(getWindow().getDecorView().findViewById(android.R.id.content), "Error de conexión.", Snackbar.LENGTH_LONG);
+                        View sbView = snackbar.getView();
+                        sbView.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.colorPrimaryDark));
+                        snackbar.show();
+
+                        imgInfo.setVisibility(View.VISIBLE);
+                        imgInfo.setImageResource(R.drawable.ic_no_connection);
+                        txtViewMessageSancion.setVisibility(View.VISIBLE);
+                        aux.setVisibility(View.VISIBLE);
+                        txtViewMessageSancion.setText("Error al cargar las sanciones.");
                     }
                 });
 
@@ -187,8 +230,9 @@ public class SancionActivity extends AppCompatActivity {
         for (int i = 0; i < jsonSanciones.length(); i++) {
 
             JSONArray jsonSancionCentro = new JSONArray(jsonSanciones.getJSONObject(i).getString("Coordenadas"));
-            latitud = jsonSancionCentro.getJSONObject(0).getString("latitud");
-            longitud = jsonSancionCentro.getJSONObject(0).getString("longitud");
+            //Los invertí, no se por que
+            longitud = jsonSancionCentro.getJSONObject(0).getString("latitud");
+            latitud = jsonSancionCentro.getJSONObject(0).getString("longitud");
 
             ticket = new Sancion(Integer.parseInt(jsonSanciones.getJSONObject(i).getString("idSancion")),
                     jsonSanciones.getJSONObject(i).getString("Fecha") + " - " + jsonSanciones.getJSONObject(i).getString("Hora"),
