@@ -400,6 +400,8 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
     int obtenerValoresDelServerResponse = 0;
     boolean problemConnection = false;
 
+    Snackbar snackbarNoServer;
+
     //----------------------------------------------------------------------------------------------
 
 
@@ -1185,10 +1187,12 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
 
         if (networkInfo != null && networkInfo.isConnected()) {
             // Si hay conexión a Internet en este momento
-            alertLay.setVisibility(View.INVISIBLE);
+            alertLay.setVisibility(View.GONE);
 
             //Si aun no nos conectamos con el server
             if(!serverConnected){
+
+                find.setVisibility(View.GONE);
 
                 if (!timersOn) {
                     obtenerValoresDelServer(session.infoId());
@@ -1210,10 +1214,18 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
 
                     if(obtenerVistaServerResponse > 1 && obtenerValoresDelServerResponse > 1){
                         find.setVisibility(View.GONE);
-                        Snackbar snackbar = Snackbar.make(this.getWindow().getDecorView().findViewById(android.R.id.content), "Error de conexión con el servidor", Snackbar.LENGTH_INDEFINITE);
-                        View sbView = snackbar.getView();
-                        sbView.setBackgroundColor(ContextCompat.getColor(this, R.color.colorPrimaryDark));
-                        snackbar.show();
+
+
+                        if(snackbarNoServer == null)
+                            snackbarNoServer = Snackbar.make(this.getWindow().getDecorView().findViewById(android.R.id.content), "Error de conexión con el servidor", Snackbar.LENGTH_INDEFINITE);
+
+                        if(!snackbarNoServer.isShown()){
+                            View sbView = snackbarNoServer.getView();
+                            sbView.setBackgroundColor(ContextCompat.getColor(this, R.color.colorPrimaryDark));
+                            snackbarNoServer.show();
+
+                        }
+
                         problemConnection = true;
                     }
                 }
@@ -1313,7 +1325,12 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
         //destino = new LatLng(latitudDestino, longitudDestino);
 
 
-        if(isOnlineNet()){
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+
+        if (networkInfo != null && networkInfo.isConnected()) {
+
+            Log.d("OonTheWay", "Connected");
+
             alertLay.setVisibility(View.GONE);
             //espacioParken(String.valueOf(latitudDestino), String.valueOf(longitudDestino));
             //buscarEspacioParken(String.valueOf(session.getLatDestino()), String.valueOf(session.getLngDestino()), METHOD_PARKEN_SPACE_CHECK);
@@ -1333,8 +1350,10 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
 
 
         }else {
+
+            Log.d("OonTheWay", "No Internet");
             alertLay.setVisibility(View.VISIBLE);
-            txtAlert.setText("No hay conexión a Internet");
+            txtAlertNoInternet.setText("No hay conexión a Internet");
         }
     }
 
@@ -1526,7 +1545,7 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
 
         }
         else {
-            alertLay.setVisibility(View.GONE);
+            alertLay.setVisibility(View.VISIBLE);
             txtAlertNoInternet.setText("No hay conexión a Internet");
 
         }
@@ -5012,6 +5031,8 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
         if (networkInfo != null && networkInfo.isConnected()) {
             // Si hay conexión a Internet en este momento
             if(vista == null){
+
+                find.setVisibility(View.GONE);
                 obtenerVistaDelServer(session.infoId());
                 obtenerValoresDelServer(session.infoId());
 
