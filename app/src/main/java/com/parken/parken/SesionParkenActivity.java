@@ -35,6 +35,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.bumptech.glide.load.resource.NullEncoder;
 import com.paypal.android.sdk.payments.PayPalConfiguration;
 import com.paypal.android.sdk.payments.PayPalPayment;
 import com.paypal.android.sdk.payments.PayPalService;
@@ -499,6 +500,10 @@ public class SesionParkenActivity extends AppCompatActivity {
                 vehiculosModelo = new CharSequence[1];
                 vehiculosMarca = new CharSequence[1];
                 vehiculosId[0] = "0";
+                vehiculos[0] = "Agregar un vehículo";
+                vehiculosMarca[0] = "";
+                vehiculosModelo[0] = "";
+                vehiculosPlaca[0] = "";
             }
 
             //if(txtHora.getText().toString().equals("Selecciona...")){
@@ -528,6 +533,7 @@ public class SesionParkenActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(JSONObject response){
                         showProgress(false);
+                        Log.d("Cars", response.toString());
                         try {
                             if(response.getString("success").equals("1")){
 
@@ -545,6 +551,10 @@ public class SesionParkenActivity extends AppCompatActivity {
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
+                            Snackbar snackbar = Snackbar.make(getWindow().getDecorView().findViewById(android.R.id.content), "Error", Snackbar.LENGTH_LONG);
+                            View sbView = snackbar.getView();
+                            sbView.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.colorPrimaryDark));
+                            snackbar.show();
                         }
                         dialogVehiculosList().show();
                         return;
@@ -583,6 +593,8 @@ public class SesionParkenActivity extends AppCompatActivity {
                         showProgress(false);
                         try {
                             if(response.getString("success").equals("1")){
+
+                                Notificacion.lanzar(getApplicationContext(), ParkenActivity.NOTIFICATION_PAYING, "DEFAULT", null);
 
                             } else{
                                 dialogError().show();

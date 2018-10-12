@@ -59,6 +59,8 @@ public class PasswordActivity extends AppCompatActivity {
     private View mProgressView;
     private View mPassFormView;
 
+    private ShPref session;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,6 +79,8 @@ public class PasswordActivity extends AppCompatActivity {
 
         volley = VolleySingleton.getInstance(getApplicationContext());
         fRequestQueue = volley.getRequestQueue();
+
+        session = new ShPref(this);
 
         Intent intent = getIntent();
 
@@ -195,6 +199,8 @@ public class PasswordActivity extends AppCompatActivity {
                                 }
                                 if(origin.equals("recoverPasswordActivity")){
                                     startActivity(new Intent(PasswordActivity.this, ParkenActivity.class));
+                                    session.setInfo(response.getString("idAutomovilista"),response.getString("Nombre"), response.getString("Apellido"), response.getString("Email"), response.getString("Contrasena"), response.getString("Celular"), response.getString("Puntosparken"));
+                                    session.setLoggedin(true);
 
                                 }
 

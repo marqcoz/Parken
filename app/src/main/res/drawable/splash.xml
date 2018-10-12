@@ -6,6 +6,6 @@ android:opacity="opaque">
     <item >
     <bitmap
         android:gravity="center"
-        android:src="@mipmap/parkenlogo_resize"/>
+        android:src="@mipmap/parkenlogo"/>
 </item>
 </layer-list>

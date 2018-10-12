@@ -149,7 +149,7 @@ public class VehiculoActivity extends AppCompatActivity {
                                 imgInfo.setVisibility(View.VISIBLE);
                                 fab.setVisibility(View.VISIBLE);
                                 txtViewMessageCars.setVisibility(View.VISIBLE);
-                                imgInfo.setImageResource(R.drawable.ic_add_blue);
+                                imgInfo.setImageResource(R.drawable.ic_no_car);
                                 txtViewMessageCars.setText("Aún no tienes vehículos registrados. \n Agrega uno.");
 
                             }

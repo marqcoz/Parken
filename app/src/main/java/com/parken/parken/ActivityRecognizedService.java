@@ -2,6 +2,7 @@ package com.parken.parken;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.graphics.Color;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
@@ -42,9 +43,9 @@ public class ActivityRecognizedService extends IntentService {
                     if( activity.getConfidence() >= 75 ) {
                         //changeMovement(DetectedActivity.IN_VEHICLE);
 
-                        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+                        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "holo");
                         builder.setContentText( "Are you in vehicle?" );
-                        builder.setSmallIcon( R.mipmap.ic_launcher );
+                        builder.setSmallIcon( R.drawable.ic_parken_notification );
                         builder.setContentTitle( getString( R.string.app_name ) );
                         NotificationManagerCompat.from(this).notify(0, builder.build());}
                     break;
@@ -52,7 +53,7 @@ public class ActivityRecognizedService extends IntentService {
                 case DetectedActivity.ON_BICYCLE: {
                     Log.e( "ActivityRecogition", "On Bicycle: " + activity.getConfidence() );
                     if( activity.getConfidence() >= 75 ) {
-                        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+                        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "holo");
                         builder.setContentText( "Are you on bike?" );
                         builder.setSmallIcon( R.mipmap.ic_launcher );
                         builder.setContentTitle( getString( R.string.app_name ) );
@@ -63,7 +64,7 @@ public class ActivityRecognizedService extends IntentService {
                     Log.e( "ActivityRecogition", "On Foot: " + activity.getConfidence() );
                     if( activity.getConfidence() >= 75 ) {
                         changeMovement(DetectedActivity.IN_VEHICLE);
-                        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+                        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "holo");
                         builder.setContentText( "Are you parado?" );
                         builder.setSmallIcon( R.mipmap.ic_launcher );
                         builder.setContentTitle( getString( R.string.app_name ) );
@@ -78,9 +79,10 @@ public class ActivityRecognizedService extends IntentService {
                     Log.e( "ActivityRecogition", "Still: " + activity.getConfidence() );
                     if( activity.getConfidence() >= 75 ) {
                         changeMovement(DetectedActivity.IN_VEHICLE);
-                        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+                        NotificationCompat.Builder builder = new NotificationCompat.Builder(this,"holo");
                         builder.setContentText( "Are you stilling?" );
-                        builder.setSmallIcon( R.mipmap.ic_launcher );
+                        builder.setSmallIcon( R.drawable.ic_parken_notification);
+                        builder.setColor(Color.BLACK);
                         builder.setContentTitle( getString( R.string.app_name ) );
                         NotificationManagerCompat.from(this).notify(0, builder.build());}
                     break;
@@ -94,7 +96,7 @@ public class ActivityRecognizedService extends IntentService {
 
                     if( activity.getConfidence() >= 75 ) {
                         changeMovement(DetectedActivity.IN_VEHICLE);
-                        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+                        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "holo");
                         builder.setContentText( "Are you walking?" );
                         builder.setSmallIcon( R.mipmap.ic_launcher );
                         builder.setContentTitle( getString( R.string.app_name ) );

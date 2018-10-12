@@ -145,7 +145,7 @@ public class GeofenceOnTheWayTransitionsIntentService extends IntentService {
 
     // Create notification
     private Notification createNotification(String msg, JSONObject data,  PendingIntent notificationPendingIntent) {
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this);
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this,"holo");
         try {
             notificationBuilder
                     .setSmallIcon(R.mipmap.ic_launcher)
@@ -297,6 +297,9 @@ public class GeofenceOnTheWayTransitionsIntentService extends IntentService {
                                     dialogIntent.putExtra("ActivityStatus", ParkenActivity.MESSAGE_FAILED);
                                 }
 
+
+                                startActivity(dialogIntent);
+
                             }
 
                         } catch (JSONException e) {
@@ -304,9 +307,10 @@ public class GeofenceOnTheWayTransitionsIntentService extends IntentService {
                             //actParken.dialogFailed().show();
                             //actParken.setViewParkenSpaceBooked(ParkenActivity.VIEW_PARKEN);
                             dialogIntent.putExtra("ActivityStatus", ParkenActivity.MESSAGE_FAILED);
+
+                            startActivity(dialogIntent);
                         }
 
-                        startActivity(dialogIntent);
                         return;
                     }
                 },

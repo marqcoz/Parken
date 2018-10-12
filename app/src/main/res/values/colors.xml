@@ -5,4 +5,5 @@
     <color name="colorAccent">#34495e</color>
     <color name="greenPass">#00c853</color>
     <color name="greenLight">#2ecc71</color>
+    <color name="black">#000000</color>
 </resources>

@@ -11,17 +11,26 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/parkenlogo"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@mipmap/parkenlogo"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
+
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
+
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_parken_notification" />
+
+        <meta-data android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/black"/>
 
         <activity android:name=".LoginActivity"
             android:configChanges="screenSize|orientation"
@@ -101,7 +110,8 @@
             android:theme="@style/AppTheme" />
         <activity
             android:name=".SesionParkenActivity"
-            android:parentActivityName=".ParkenActivity" />
+            android:parentActivityName=".ParkenActivity"
+            android:launchMode="singleTask"/>
         <activity
             android:name=".AppGPSActivity"
             android:parentActivityName=".SettingsActivity" />

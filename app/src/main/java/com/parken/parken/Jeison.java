@@ -30,20 +30,23 @@ public class Jeison {
     public static final String YOUR_API_KEY = "AIzaSyDkmiXSeUvTkbXgV7UYpwmhiysqkrjqcZ0";
 
     //public static final String IP = "192.168.1.123";
-    //public static final String IP = "192.168.200.25";
+    public static final String IP = "192.168.200.29";
     //public static final String IP = "192.168.43.236";
     //public static final String IP = "192.168.15.33";
     //public static final String IP = "192.168.15.116";
-    public static final String IP = "192.168.1.95";
+    //public static final String IP = "192.168.1.64";
     //public static final String IP = "10.4.132.31";
     //public static final String IP = "100.87.199.16";
     //public static final String IP = "10.100.126.239";
 
-    //public static final String IP = "10.0.172.141";
+    //public static final String IP = "ec2-18-222-28-193.us-east-2.compute.amazonaws.com";
+
+
 
 
     public static final String PORT = ":3000";
     public static final String URL_BASE = "http://" + IP + PORT;
+
 
     public static final String URL_SOCKET = URL_BASE;
     public static final String URL_LOGIN = URL_BASE + "/login";

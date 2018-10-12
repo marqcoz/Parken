@@ -12,6 +12,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.PermissionChecker;
 import android.support.v7.app.ActionBar;
@@ -75,6 +76,7 @@ public class ZonaParkenActivity extends AppCompatActivity implements OnMapReadyC
     private int mapaListo = 0;
 
     private Button espacioParken;
+    private FloatingActionButton center;
 
     private GoogleMap mMap;
 
@@ -140,13 +142,13 @@ public class ZonaParkenActivity extends AppCompatActivity implements OnMapReadyC
 
 
         espacioParken = findViewById(R.id.btnEspacioParken);
-
+        center = findViewById(R.id.floatingCenterMap2);
 
         espacioParken.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 //actParken.activityParken.finish();
-                Intent parken = new Intent(ZonaParkenActivity.this,ParkenActivity.class).setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                Intent parken = new Intent(ZonaParkenActivity.this,ParkenActivity.class);
                 parken.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 parken.putExtra("Activity", ParkenActivity.ACTIVITY_ZONA_PARKEN);
                 parken.putExtra("zonasParkenJson", zonaParkenJson);
@@ -163,6 +165,16 @@ public class ZonaParkenActivity extends AppCompatActivity implements OnMapReadyC
             }
         });
 
+
+        center.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                CameraUpdate miUbicacion = CameraUpdateFactory.newLatLngZoom(new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude()),15);
+                mMap.animateCamera(miUbicacion);
+                center.setVisibility(View.GONE);
+
+            }
+        });
 
 
         //cargarMapa();
@@ -185,6 +197,16 @@ public class ZonaParkenActivity extends AppCompatActivity implements OnMapReadyC
         mMap = googleMap;
         mMap.clear();
 
+        mMap.setMyLocationEnabled(true);
+        mMap.clear();
+        UiSettings uiSettings = mMap.getUiSettings();
+        uiSettings.setMyLocationButtonEnabled(false);
+        uiSettings.setMapToolbarEnabled(false);
+        uiSettings.setZoomControlsEnabled(false);
+        uiSettings.setCompassEnabled(false);
+        uiSettings.setIndoorLevelPickerEnabled(false);
+        uiSettings.setTiltGesturesEnabled(false);
+
         Log.d("MapZona", "Recarga");
         //Centrar el mapa en Ciudad de México
         float zoom = 10f;
@@ -201,6 +223,13 @@ public class ZonaParkenActivity extends AppCompatActivity implements OnMapReadyC
                     cargarMapaZonasParken();
                 }
                 mapaListo = 1;
+            }
+        });
+
+        mMap.setOnCameraMoveStartedListener(new GoogleMap.OnCameraMoveStartedListener() {
+            @Override
+            public void onCameraMoveStarted(int i) {
+                center.setVisibility(View.VISIBLE);
             }
         });
 
