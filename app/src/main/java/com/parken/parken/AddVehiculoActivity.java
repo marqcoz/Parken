@@ -330,6 +330,9 @@ public class AddVehiculoActivity extends AppCompatActivity {
                                     if(origin.equals("SesionParkenActivity")){
                                         seParkenAct.activitySesionParken.textVehiculo.setText(modeloString+" - "+placaString);
                                         seParkenAct.activitySesionParken.idVehiculo= idvehiculo;
+                                        seParkenAct.activitySesionParken.marcaVehiculo= marcaString;
+                                        seParkenAct.activitySesionParken.modeloVehiculo= modeloString;
+                                        seParkenAct.activitySesionParken.placaVehiculo= placaString;
                                         finish();
 
                                     }else{
@@ -354,6 +357,9 @@ public class AddVehiculoActivity extends AppCompatActivity {
                             if(origin.equals("SesionParkenActivity")){
                                 seParkenAct.activitySesionParken.textVehiculo.setText(modeloString+" - "+placaString);
                                 seParkenAct.activitySesionParken.idVehiculo= idvehiculo;
+                                seParkenAct.activitySesionParken.marcaVehiculo= marcaString;
+                                seParkenAct.activitySesionParken.modeloVehiculo= modeloString;
+                                seParkenAct.activitySesionParken.placaVehiculo= placaString;
                                 finish();
 
                             }else{
@@ -377,6 +383,9 @@ public class AddVehiculoActivity extends AppCompatActivity {
                             if(origin.equals("SesionParkenActivity")){
                                 seParkenAct.activitySesionParken.textVehiculo.setText(modeloString+" - "+placaString);
                                 seParkenAct.activitySesionParken.idVehiculo= idvehiculo;
+                                seParkenAct.activitySesionParken.marcaVehiculo= marcaString;
+                                seParkenAct.activitySesionParken.modeloVehiculo= modeloString;
+                                seParkenAct.activitySesionParken.placaVehiculo= placaString;
                                 finish();
 
                             }else{
@@ -400,8 +409,27 @@ public class AddVehiculoActivity extends AppCompatActivity {
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                startActivity(new Intent(AddVehiculoActivity.this, VehiculoActivity.class));
-                                finish();
+                                if(origin.equals("VehiculoInfoActivity")){
+                                    vehInf.activityVehiculoInfo.finish();
+                                    vehAct.activityVehiculo.finish();
+                                    startActivity(new Intent(AddVehiculoActivity.this, VehiculoActivity.class));
+                                    finish();
+                                }else{
+
+                                    if(origin.equals("SesionParkenActivity")){
+                                        seParkenAct.activitySesionParken.textVehiculo.setText(modeloString+" - "+placaString);
+                                        seParkenAct.activitySesionParken.idVehiculo= idvehiculo;
+                                        seParkenAct.activitySesionParken.marcaVehiculo= marcaString;
+                                        seParkenAct.activitySesionParken.modeloVehiculo= modeloString;
+                                        seParkenAct.activitySesionParken.placaVehiculo= placaString;
+                                        finish();
+
+                                    }else{
+
+                                        startActivity(new Intent(AddVehiculoActivity.this, VehiculoActivity.class));
+                                        finish();
+                                    }
+                                }
                             }
                         });
 
@@ -417,7 +445,7 @@ public class AddVehiculoActivity extends AppCompatActivity {
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                //listener.onPossitiveButtonClick();
+                                dialog.dismiss();
                             }
                         });
 

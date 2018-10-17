@@ -489,7 +489,7 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
 
         requestPermissionLocation();
 
-
+        //atenderNotificaciones();
 
         mGeofencingClient = LocationServices.getGeofencingClient(this);
         connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -3255,6 +3255,7 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
                                 //Seleccionamos la vista que obtenemos del servidor
 
                                 selectView(response.getString("vista"), VIEW_START, response);
+                                atenderNotificaciones();
 
                             } else {
 
@@ -3373,6 +3374,205 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
                 });
 
         fRequestQueue.add(jsArrayRequest);
+
+    }
+
+    public void atenderNotificaciones(){
+        Intent intent = getIntent();
+        if(intent != null){
+            String opcNotifications = intent.getStringExtra("Activity");
+
+            if(opcNotifications != null) {
+                switch (opcNotifications) {
+
+                    case NOTIFICATIONS:
+
+                        switchNotifications(intent.getIntExtra("ActivityStatus", 0),
+                                intent.getIntExtra("Actions", -1),
+                                intent.getStringExtra("data"));
+
+
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+        }
+    }
+
+    public void switchNotifications(int status, int actions, String data){
+
+        switch (status){
+
+            case NOTIFICATION_ON_THE_WAY:
+
+                if(vista == VIEW_ON_THE_WAY){
+
+                    switch (actions){
+
+                        case 1:
+
+                            abrirGPSBrowser(latitudDestino, longitudDestino, "");
+
+                            break;
+                        case 2:
+
+                            cancelarEnCamino();
+
+                            break;
+                        case 3:
+                            break;
+
+                        default:
+                            break;
+
+                    }
+                }
+
+
+                break;
+
+            case NOTIFICATION_EP_BOOKED:
+
+                if(vista == VIEW_PARKEN_SPACE_BOOKED){
+
+                    switch (actions){
+
+                        case 1:
+
+                            abrirGPSBrowser(latitudDestino, longitudDestino, "");
+
+                            break;
+                        case 2:
+
+                            cancelarEnCamino();
+
+                            break;
+                        case 3:
+                            break;
+
+                        default:
+                            break;
+
+                    }
+                }
+
+
+                break;
+
+
+            case NOTIFICATION_EP_BOOKED_CANCELED:
+
+                if(vista != null){
+                    if(vista.equals(VIEW_PARKEN_SPACE_BOOKED)){
+                        espacioParkenReservadoFinalizado();
+                    }
+
+                }else{ //Si la vista es NULL, entonces no hay nada
+                    //Unicamente informamos que el tiempo se terminó
+                    //Ya que la sesió la eliminó el servidor
+
+                    dialogEPTimeOut = dialogEPTimeOut();
+                    dialogEPTimeOut.show();
+
+                    vista = VIEW_PARKEN;
+                    selectView(vista, VIEW_START, null);
+
+                }
+
+
+                break;
+
+            case NOTIFICATION_ALMOST_FINISH_PS:
+
+                if(vista == VIEW_PARKEN_SESSION_ACTIVE){
+
+                    switch (actions){
+                        case 1:
+
+                            renovarSesion();
+
+                            break;
+                        case 2:
+
+                            dialogFinishParken().show();
+
+                            break;
+                        case 3:
+                            break;
+
+                        default:
+                            break;
+
+                    }
+                }
+
+
+                break;
+
+            case NOTIFICATION_FINISH_PS:
+
+                switch (actions){
+                    case 1:
+
+                        finalizarDirectSesionParken();
+
+                        break;
+
+                    default:
+                        break;
+
+                }
+
+                break;
+
+            case NOTIFICATION_MOVEMENT:
+
+                switch (actions){
+                    case 1:
+
+                        confirmarFinSesionParken(Integer.valueOf(data));
+
+                        break;
+
+                    case 2:
+
+                        omitirFinSesionParken(Integer.valueOf(data));
+
+                        break;
+
+                    default:
+                        break;
+
+                }
+
+                break;
+            case NOTIFICATION_NEW_RECEIPT:
+
+                switch (actions){
+                    case 1:
+
+                        pagarSancion(data);
+
+                        break;
+
+                    default:
+                        break;
+
+                }
+
+                break;
+
+            case NOTIFICATION_INFO:
+                startActivity(new Intent(ParkenActivity.this, SancionActivity.class));
+                break;
+
+
+            default:
+                break;
+
+        }
 
     }
 
@@ -4818,175 +5018,9 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
 
                     case NOTIFICATIONS:
 
-                        switch (intent.getIntExtra("ActivityStatus", 0)){
-
-                            case NOTIFICATION_ON_THE_WAY:
-
-                                if(vista == VIEW_ON_THE_WAY){
-
-                                    switch (intent.getIntExtra("Actions", -1)){
-
-                                        case 1:
-
-                                            abrirGPSBrowser(latitudDestino, longitudDestino, "");
-
-                                            break;
-                                        case 2:
-
-                                            cancelarEnCamino();
-
-                                            break;
-                                        case 3:
-                                            break;
-
-                                            default:
-                                                break;
-
-                                    }
-                                }
-
-
-                                break;
-
-                            case NOTIFICATION_EP_BOOKED:
-
-                                if(vista == VIEW_PARKEN_SPACE_BOOKED){
-
-                                    switch (intent.getIntExtra("Actions", -1)){
-
-                                        case 1:
-
-                                            abrirGPSBrowser(latitudDestino, longitudDestino, "");
-
-                                            break;
-                                        case 2:
-
-                                            cancelarEnCamino();
-
-                                            break;
-                                        case 3:
-                                            break;
-
-                                        default:
-                                            break;
-
-                                    }
-                                }
-
-
-                                break;
-
-
-                            case NOTIFICATION_EP_BOOKED_CANCELED:
-
-                                if(vista != null){
-                                    if(vista.equals(VIEW_PARKEN_SPACE_BOOKED)){
-                                        espacioParkenReservadoFinalizado();
-                                    }
-
-                                }else{ //Si la vista es NULL, entonces no hay nada
-                                    //Unicamente informamos que el tiempo se terminó
-                                    //Ya que la sesió la eliminó el servidor
-
-                                    dialogEPTimeOut = dialogEPTimeOut();
-                                    dialogEPTimeOut.show();
-
-                                    vista = VIEW_PARKEN;
-                                    selectView(vista, VIEW_START, null);
-
-                                }
-
-
-                                break;
-
-                            case NOTIFICATION_ALMOST_FINISH_PS:
-
-                                if(vista == VIEW_PARKEN_SESSION_ACTIVE){
-
-                                    switch (intent.getIntExtra("Actions", -1)){
-
-                                        case 1:
-
-                                            renovarSesion();
-
-                                            break;
-                                        case 2:
-
-                                            dialogFinishParken().show();
-
-                                            break;
-                                        case 3:
-                                            break;
-
-                                        default:
-                                            break;
-
-                                    }
-                                }
-
-
-                                break;
-
-                            case NOTIFICATION_FINISH_PS:
-
-                                switch (intent.getIntExtra("Actions", -1)){
-
-                                    case 1:
-
-                                        finalizarDirectSesionParken();
-
-                                        break;
-
-                                    default:
-                                        break;
-
-                                }
-
-                                break;
-
-                            case NOTIFICATION_MOVEMENT:
-
-                                switch (intent.getIntExtra("Actions", -1)){
-
-                                    case 1:
-
-                                        confirmarFinSesionParken(Integer.valueOf(intent.getStringExtra("Mode")));
-
-                                        break;
-
-                                    case 2:
-
-                                        omitirFinSesionParken(Integer.valueOf(intent.getStringExtra("Mode")));
-
-                                        break;
-
-                                    default:
-                                        break;
-
-                                }
-
-                                break;
-                            case NOTIFICATION_NEW_RECEIPT:
-
-                                switch (intent.getIntExtra("Actions", -1)){
-
-                                    case 1:
-
-                                        pagarSancion(intent.getStringExtra("sancionJSON"));
-
-                                        break;
-
-                                    default:
-                                        break;
-
-                                }
-
-                                break;
-
-                                default:
-                                    break;
-
-                        }
+                        switchNotifications(intent.getIntExtra("ActivityStatus", 0),
+                                intent.getIntExtra("Actions", -1),
+                                intent.getStringExtra("data"));
 
                         break;
 

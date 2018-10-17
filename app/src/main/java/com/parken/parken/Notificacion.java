@@ -399,7 +399,7 @@ public class Notificacion extends Notification {
                         .putExtra("Activity", ParkenActivity.NOTIFICATIONS)
                         .putExtra("ActivityStatus", id)
                         .putExtra("Actions", 1)
-                        .putExtra("Mode", data);
+                        .putExtra("data", data);
                 pendingIntent1 = PendingIntent.getActivity(c, id+2, actionIntent1,PendingIntent.FLAG_ONE_SHOT);
 
                 actionIntent2 = new Intent(c, ParkenActivity.class)
@@ -407,7 +407,7 @@ public class Notificacion extends Notification {
                         .putExtra("Activity", ParkenActivity.NOTIFICATIONS)
                         .putExtra("ActivityStatus", id)
                         .putExtra("Actions", 2)
-                        .putExtra("Mode", data);
+                        .putExtra("data", data);
                 pendingIntent2 = PendingIntent.getActivity(c, id+3, actionIntent2,PendingIntent.FLAG_ONE_SHOT);
 
 
@@ -438,7 +438,7 @@ public class Notificacion extends Notification {
                         .putExtra("Activity", ParkenActivity.NOTIFICATIONS)
                         .putExtra("ActivityStatus", id)
                         .putExtra("Actions", 0)
-                        .putExtra("sancionJSON", data);
+                        .putExtra("data", data);
 
                 pendingIntent = PendingIntent.getActivity(c, id+1, intent,PendingIntent.FLAG_ONE_SHOT);
 
