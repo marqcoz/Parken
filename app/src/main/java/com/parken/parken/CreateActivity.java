@@ -6,13 +6,16 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Html;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
@@ -50,6 +53,7 @@ public class CreateActivity extends AppCompatActivity {
     //Botones
     Button sign;
     CheckBox terms;
+    TextView terminos;
 
     ScrollView form;
 
@@ -92,6 +96,8 @@ public class CreateActivity extends AppCompatActivity {
         pass2 = findViewById(R.id.editTextPass2);
         //cel = findViewById(R.id.editTextCel);
         terms = findViewById(R.id.checkBoxTerminos);
+        terminos = findViewById(R.id.textViewTerms);
+        terminos.setText(Html.fromHtml(getResources().getString(R.string.label_terms_conditions)));
 
 
 
@@ -114,6 +120,15 @@ public class CreateActivity extends AppCompatActivity {
                     return true;
                 }
                 return false;
+            }
+        });
+
+        terminos.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Uri uri = Uri.parse("http://"+ Jeison.IP + ":3000/terms&conditions");
+                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                startActivity(intent);
             }
         });
     }
@@ -198,8 +213,12 @@ public class CreateActivity extends AppCompatActivity {
 
         }
         if(!terms.isChecked()){
-            Snackbar.make(this.getWindow().getDecorView().findViewById(android.R.id.content), getString(R.string.label_terms_conditions_missing), Snackbar.LENGTH_LONG)
-                    .show();
+
+            Snackbar snackbar = Snackbar.make(this.getWindow().getDecorView().findViewById(android.R.id.content), getString(R.string.label_terms_conditions_missing), Snackbar.LENGTH_LONG);
+            View sbView = snackbar.getView();
+            sbView.setBackgroundColor(ContextCompat.getColor(this, R.color.colorPrimaryDark));
+            snackbar.show();
+
             focusView = name;
             cancel = true;
         }

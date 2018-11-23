@@ -267,7 +267,13 @@ public class VerifyFragment extends Fragment {
                             public void onClick(DialogInterface dialog, int which) {
                                 dialog.dismiss();
                             }
-                        });
+                        })
+                .setOnDismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialog) {
+                        getActivity().finish();
+                    }
+                });
 
         return builder.create();
     }
@@ -340,16 +346,12 @@ public class VerifyFragment extends Fragment {
 
                         if (e instanceof FirebaseAuthInvalidCredentialsException) {
                             // Invalid request
-                            // ...
                             dialogError(e.getMessage()).show();
                         } else if (e instanceof FirebaseTooManyRequestsException) {
                             // The SMS quota for the project has been exceeded
-                            // ...
                             dialogError(e.getMessage()).show();
                         }
 
-                        // Show a message and update the UI
-                        // ...
                     }
 
                     @Override
@@ -363,15 +365,11 @@ public class VerifyFragment extends Fragment {
 
                     @Override
                     public void onCodeAutoRetrievalTimeOut(String s) {
-                        dialogVerificationFailed().show();
+                        //dialogVerificationFailed().show();
                         super.onCodeAutoRetrievalTimeOut(s);
                     }
-
-
                 }
-
         );
-
     }
 
 
@@ -450,31 +448,31 @@ public class VerifyFragment extends Fragment {
     private void signInWithPhoneAuthCredential(PhoneAuthCredential credential) {
         Log.e("PhoneAuthFirebase", "true");
         mAuth.signInWithCredential(credential)
-                .addOnCompleteListener(getActivity(), new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        showProgress(false);
+            .addOnCompleteListener(getActivity(), new OnCompleteListener<AuthResult>() {
+                @Override
+                public void onComplete(@NonNull Task<AuthResult> task) {
+                showProgress(false);
 
-                        if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-                            if(origin.equals("createActivity")){
-                                enviarJsonSign(phoneNumber);
-                            }
-                            if (origin.equals("informationActivity")){
-                                actualizarPerfilAutomovilista(id,column,phoneNumber);
-                            }
-
-                        } else {
-                            // Sign in failed, display a message and update the UI
-                            Log.d("TAG", "signInWithCredential:failure", task.getException());
-                            if (task.getException() instanceof FirebaseAuthInvalidCredentialsException) {
-                                // The verification code entered was invalid
-                                dialogVerificationFailed().show();
-                            }
-                            dialogVerificationFailed().show();
-                        }
+                if (task.isSuccessful()) {
+                    // Sign in success, update UI with the signed-in user's information
+                    if(origin.equals("createActivity")){
+                        enviarJsonSign(phoneNumber);
                     }
-                });
+                    if (origin.equals("informationActivity")){
+                        actualizarPerfilAutomovilista(id,column,phoneNumber);
+                    }
+
+                } else {
+                    // Sign in failed, display a message and update the UI
+                    Log.d("TAG", "signInWithCredential:failure", task.getException());
+                    if (task.getException() instanceof FirebaseAuthInvalidCredentialsException) {
+                        // The verification code entered was invalid
+                        dialogVerificationFailed().show();
+                    }
+                    dialogVerificationFailed().show();
+                }
+                    }
+            });
     }
 
 

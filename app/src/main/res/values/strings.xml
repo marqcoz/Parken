@@ -53,13 +53,14 @@
     <string name="alert_no_login_tittle">Error al iniciar sesión</string>
     <string name="alert_no_login_message">Correo o contraseña incorrecta. Intenta de nuevo.</string>
     <string name="alert_no_user_tittle">El usuario no existe</string>
-    <string name="alert_no_user_message">El usuario no está registrado en Parken</string>
+    <string name="alert_no_user_message">El usuario no está registrado en Parken.</string>
 
 
     <!-- Crear cuenta "CreateActivity" -->
     <string name="label_input_data">Ingresa tus datos:</string>
     <string name="label_pass2">Repite contraseña</string>
-    <string name="label_terms_conditions">Acepto términos y condiciones de Parken</string>
+    <string name="label_terms_conditions"><![CDATA[Acepto <u>términos y condiciones</u> de Parken]]></string>
+    <string name="mi_mensaje"><![CDATA[Este es un <u>Mamut chiquito</u>]]></string>
     <string name="label_terms_conditions_missing">Debes aceptar los términos y condiciones.</string>
     <string name="button_next">Siguiente</string>
 

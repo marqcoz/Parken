@@ -202,6 +202,7 @@ public class SancionPagoActivity extends AppCompatActivity {
                         payReceiptSuccesful(idSancion);
                         //Intent intent = new Intent(SancionPagoActivity.this, ParkenActivity.class);
                         //startActivity(intent);
+                        //dialogPaySuccessful1().show();
 
 
 
@@ -342,6 +343,22 @@ public class SancionPagoActivity extends AppCompatActivity {
 
                     }
                 });
+
+        return builder.create();
+    }
+
+    public AlertDialog dialogPaySuccessful1() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        builder.setTitle("Pago exitoso")
+                .setMessage("Transacción correcta")
+                .setPositiveButton("OK",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
 
         return builder.create();
     }

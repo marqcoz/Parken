@@ -33,7 +33,6 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
     @Override
     public void onTokenRefresh() {
         // Get updated InstanceID token.
-
         session = new ShPref(ParkenActivity.activityParken);
         String refreshedToken = FirebaseInstanceId.getInstance().getToken();
         FirebaseMessaging.getInstance().subscribeToTopic("automovilista");
@@ -81,6 +80,7 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
                         try {
                             if(response.getString("success").equals("1")){
                                 Log.d(TAG, "Refreshed token: " + token);
+                                session.setToken(token);
                                 return;
 
                             }else{

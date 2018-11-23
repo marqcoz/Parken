@@ -7,6 +7,8 @@ import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.text.TextUtils;
 import android.util.Log;
@@ -77,10 +79,17 @@ public class GeofenceOnTheWayTransitionsIntentService extends IntentService {
                 volley = VolleySingleton.getInstance(getApplicationContext());
                 fRequestQueue = volley.getRequestQueue();
 
+                Log.d(TAG, "Se ingresó a la geocerca");
 
                 //Método para buscar el espacio Parken disponible y apartar el espacio
+
+                SharedPreferences pref = PreferenceManager
+                        .getDefaultSharedPreferences(ParkenActivity.activityParken);
+                String distancia;
+                distancia = pref.getString("distance_zonaParken","1000");
                 buscarEspacioParken(String.valueOf(ParkenActivity.latitudDestino),
                         String.valueOf(ParkenActivity.longitudDestino),
+                        distancia,
                         ParkenActivity.METHOD_PARKEN_SPACE_BOOKED);
 
                 //actParken.dialogParken().show();
@@ -179,10 +188,12 @@ public class GeofenceOnTheWayTransitionsIntentService extends IntentService {
         }
     }
 
-    public void buscarEspacioParken(final String latitudDestino, final String longitudDestino, final String origen) {
+    public void buscarEspacioParken(final String latitudDestino, final String longitudDestino, String distancia, final String origen) {
         HashMap<String, String> parametros = new HashMap();
         parametros.put("latitud", latitudDestino);
         parametros.put("longitud", longitudDestino);
+        parametros.put("distancia", distancia);
+        parametros.put("idAutomovilista", session.infoId());
 
         JsonObjectRequest jsArrayRequest = new JsonObjectRequest(
                 Request.Method.POST,

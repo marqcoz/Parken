@@ -26,6 +26,7 @@
         android:layout_marginLeft="8dp"
         android:layout_marginTop="12dp"
         android:layout_toEndOf="@+id/iv_avatar"
+        android:fontFamily="@font/source_sans_pro"
         android:text="Nombre"
         android:textAppearance="?attr/textAppearanceListItem" />
 
@@ -33,9 +34,10 @@
         android:id="@+id/tv_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/tv_title"
         android:layout_below="@+id/tv_title"
+        android:layout_alignLeft="@+id/tv_title"
         android:layout_marginTop="4dp"
+        android:fontFamily="@font/source_sans_pro"
         android:text="Cargo"
         tools:text="CEO" />
 
@@ -43,10 +45,11 @@
         android:id="@+id/tv_company"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/tv_title"
         android:layout_below="@+id/tv_name"
-        android:layout_marginBottom="12dp"
+        android:layout_alignLeft="@+id/tv_title"
         android:layout_marginTop="4dp"
+        android:layout_marginBottom="12dp"
+        android:fontFamily="@font/source_sans_pro"
         android:text="Compañía"
         tools:text="Blue Insurances Ltd" />
 </RelativeLayout>

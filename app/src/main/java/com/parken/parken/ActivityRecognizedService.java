@@ -33,17 +33,21 @@ public class ActivityRecognizedService extends IntentService {
     }
 
     private void handleDetectedActivities(List<DetectedActivity> probableActivities) {
-        for( DetectedActivity activity : probableActivities ) {
-            Log.e( "ActivityRecogition", "Actividad: " + activity.getType() );
-            switch( activity.getType() ) {
-                case DetectedActivity.IN_VEHICLE: {
-                    Log.e( "ActivityRecogition", "In Vehicle: " + activity.getConfidence() );
 
+        for( DetectedActivity activity : probableActivities ) {
+
+            Log.e( "ActivityRecogition", "Actividad: " + activity.getType() );
+
+            switch( activity.getType() ) {
+
+                case DetectedActivity.IN_VEHICLE: {
+
+                    Log.e("ActivityRecogition", "In Vehicle: " + activity.getConfidence());
 
                     if( activity.getConfidence() >= 75 ) {
                         //changeMovement(DetectedActivity.IN_VEHICLE);
-
-                        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "holo");
+                        NotificationCompat.Builder builder;
+                        builder = new NotificationCompat.Builder(this, "holo");
                         builder.setContentText( "Are you in vehicle?" );
                         builder.setSmallIcon( R.drawable.ic_parken_notification );
                         builder.setContentTitle( getString( R.string.app_name ) );
@@ -105,6 +109,7 @@ public class ActivityRecognizedService extends IntentService {
 
                     break;
                 }
+
                 case DetectedActivity.UNKNOWN: {
                     Log.e( "ActivityRecogition", "Unknown: " + activity.getConfidence() );
                     break;

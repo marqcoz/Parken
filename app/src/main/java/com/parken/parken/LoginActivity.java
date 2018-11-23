@@ -27,6 +27,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -58,7 +59,8 @@ public class LoginActivity extends AppCompatActivity{
 
     //TextViews
     AutoCompleteTextView mail;
-    EditText pass;
+    AutoCompleteTextView pass;
+
 
     //Variables
     String correo;
@@ -113,8 +115,9 @@ public class LoginActivity extends AppCompatActivity{
         login = findViewById(R.id.btnLogin);
         create = findViewById(R.id.btnSign);
         recover = findViewById(R.id.btnRecover);
-        mail = findViewById(R.id.textViewHour);
+        mail = findViewById(R.id.textViewMail);
         pass = findViewById(R.id.editTextPass);
+
 
 
         session = new ShPref(activityLogin);
@@ -174,6 +177,8 @@ public class LoginActivity extends AppCompatActivity{
 
             }
         });
+
+
     }
 
 
@@ -197,7 +202,12 @@ public class LoginActivity extends AppCompatActivity{
         View focusView = null;
 
         // Check for a valid password, if the user entered one.
-        if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
+        // Check for a valid password, if the user entered one.
+        if (TextUtils.isEmpty(password)) {
+            pass.setError(getString(R.string.error_field_required));
+            focusView = pass;
+            cancel = true;
+        } else  if (!isPasswordValid(password)) {
             pass.setError(getString(R.string.error_invalid_password));
             focusView = pass;
             cancel = true;
@@ -265,13 +275,6 @@ public class LoginActivity extends AppCompatActivity{
                             if(response.getString("success").equals("1")){
                                 Log.d("LoginActivity", response.getString("success"));
 
-                                /*
-                                Obtenemos los datos del usuario
-                                if (getIntent().getExtras().getString("idAutomovilista") != NULL){
-                                    getDataDriver(response.getString("id"));
-                                }
-                                */
-
                                 iniciarSesion(response);
 
                             }else{
@@ -283,22 +286,19 @@ public class LoginActivity extends AppCompatActivity{
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
-
-
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        //onConnectionFailed(error.getMessage());
-                        Log.d("LoginActivity", "Error Respuesta en JSON: " + error.getMessage());
+                        Log.d("LoginActivity", "Error Respuesta en JSON: "
+                                + error.getMessage());
                         showProgress(false);
                         dialogNoConnection().show();
                     }
                 });
 
         fRequestQueue.add(jsArrayRequest);
-        //onPreStartConnection();
     }
 
     private void iniciarSesion(JSONObject response) throws JSONException {

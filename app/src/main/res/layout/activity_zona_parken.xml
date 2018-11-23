@@ -41,35 +41,48 @@
             android:layout_marginTop="56dp" />
     </android.support.design.widget.CoordinatorLayout>
 
-    <Button
-        android:id="@+id/btnEspacioParken"
+    <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="20dp"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"
-        android:background="@color/colorPrimary"
-        android:fontFamily="@font/roboto"
-        android:text="Solicitar espacio Parken"
-        android:textAlignment="center"
-        android:textColor="@android:color/background_light"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        android:visibility="visible" />
+        android:layout_height="match_parent">
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/floatingCenterMap2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_marginEnd="24dp"
-        android:layout_marginBottom="90dp"
-        android:clickable="true"
-        android:visibility="gone"
-        map:backgroundTint="?attr/colorBackgroundFloating"
-        map:fabSize="mini"
-        map:srcCompat="@drawable/ic_center" />
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/floatingCenterMap2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_marginEnd="24dp"
+            android:layout_marginBottom="16dp"
+            android:clickable="true"
+            android:visibility="gone"
+            map:backgroundTint="?attr/colorBackgroundFloating"
+            map:fabSize="mini"
+            map:layout_constraintBottom_toTopOf="@+id/btnEspacioParken"
+            map:layout_constraintEnd_toEndOf="parent"
+            map:srcCompat="@drawable/ic_center" />
+
+        <Button
+            android:id="@+id/btnEspacioParken"
+            style="@android:style/Widget.Material.Light.Button.Toggle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="24dp"
+            android:background="@drawable/button_rounded_red"
+            android:fontFamily="@font/source_sans_pro"
+            android:text="Solicitar"
+            android:textAlignment="center"
+            android:textAllCaps="false"
+            android:textColor="@android:color/background_light"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:visibility="visible"
+            map:layout_constraintBottom_toBottomOf="parent"
+            map:layout_constraintEnd_toEndOf="parent"
+            map:layout_constraintStart_toStartOf="parent" />
+
+    </android.support.constraint.ConstraintLayout>
 
 </android.support.design.widget.CoordinatorLayout>
 

@@ -143,6 +143,7 @@
                 android:layout_height="wrap_content"
                 android:background="@color/colorPrimaryDark"
                 android:orientation="vertical"
+                android:padding="4dp"
                 android:visibility="gone"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
@@ -153,6 +154,7 @@
                     android:id="@+id/textViewAlertNoInternet"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/source_sans_pro"
                     android:text="ALERTAS"
                     android:textAlignment="center"
                     android:textColor="@color/common_google_signin_btn_text_dark_focused"
@@ -178,7 +180,7 @@
                     android:id="@+id/textViewEstatusEspacioParken"
                     android:layout_width="match_parent"
                     android:layout_height="35dp"
-                    android:fontFamily="@font/roboto"
+                    android:fontFamily="@font/source_sans_pro"
                     android:gravity="center"
                     android:text="Estatus del espacio Parken"
                     android:textAlignment="center"
@@ -221,93 +223,128 @@
 
         </android.support.constraint.ConstraintLayout>
 
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/searchZonaParkenButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
-            android:layout_margin="@dimen/fab_margin"
-            app:fabSize="normal"
-            app:srcCompat="@drawable/baseline_search_24" />
-
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/floatingCenterMap"
+        <android.support.constraint.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
-            android:layout_marginEnd="24dp"
-            android:layout_marginBottom="90dp"
-            android:clickable="true"
-            android:visibility="gone"
-            app:backgroundTint="?attr/colorBackgroundFloating"
-            app:fabSize="mini"
-            app:srcCompat="@drawable/ic_center" />
+            android:layout_height="match_parent">
 
 
-        <Button
-            android:id="@+id/btnCancelar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:layout_marginBottom="20dp"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
-            android:background="@color/colorPrimaryDark"
-            android:fontFamily="@font/viga"
-            android:text="Cancelar"
-            android:textAlignment="center"
-            android:textColor="@android:color/background_light"
-            android:textSize="18sp"
-            android:visibility="gone" />
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/searchZonaParkenButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:layout_margin="@dimen/fab_margin"
+                android:layout_marginEnd="16dp"
+                android:visibility="gone"
+                app:fabSize="normal"
+                app:layout_constraintBottom_toTopOf="@+id/btnNavegar"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:srcCompat="@drawable/baseline_search_24" />
 
-        <Button
-            android:id="@+id/btnNavegar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:layout_marginBottom="80dp"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
-            android:background="@color/colorPrimary"
-            android:fontFamily="@font/viga"
-            android:text="Navegar"
-            android:textAlignment="center"
-            android:textAllCaps="true"
-            android:textColor="@android:color/background_light"
-            android:textSize="18sp"
-            android:visibility="gone" />
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/floatingCenterMap"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:layout_marginEnd="24dp"
+                android:layout_marginBottom="24dp"
+                android:clickable="true"
+                android:visibility="gone"
+                app:backgroundTint="?attr/colorBackgroundFloating"
+                app:fabSize="mini"
+                app:layout_constraintBottom_toTopOf="@+id/searchZonaParkenButton"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:srcCompat="@drawable/ic_center" />
 
-        <Button
-            android:id="@+id/btnFinalizar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:layout_marginBottom="20dp"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
-            android:background="@color/colorPrimaryDark"
-            android:fontFamily="@font/viga"
-            android:text="Finalizar"
-            android:textAlignment="center"
-            android:textColor="@android:color/background_light"
-            android:textSize="18sp"
-            android:visibility="gone" />
+            <Button
+                android:id="@+id/btnNavegar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="8dp"
+                android:background="@drawable/button_rounded"
+                android:fontFamily="@font/source_sans_pro"
+                android:text="Navegar"
+                android:textAlignment="center"
+                android:textAllCaps="false"
+                android:textColor="@android:color/background_light"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                app:layout_constraintBottom_toTopOf="@+id/btnCancelar"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="1.0"
+                app:layout_constraintStart_toStartOf="parent" />
 
-        <Button
-            android:id="@+id/btnRenovar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:layout_marginBottom="80dp"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
-            android:background="@color/colorPrimary"
-            android:fontFamily="@font/viga"
-            android:text="Renovar"
-            android:textAlignment="center"
-            android:textColor="@android:color/background_light"
-            android:textSize="18sp"
-            android:visibility="gone" />
+            <Button
+                android:id="@+id/btnCancelar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/button_rounded_red"
+                android:fontFamily="@font/source_sans_pro"
+                android:text="Cancelar"
+                android:textAlignment="center"
+                android:textAllCaps="false"
+                android:textColor="@android:color/background_light"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <Button
+                android:id="@+id/btnRenovar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="8dp"
+                android:background="@drawable/button_rounded"
+                android:fontFamily="@font/source_sans_pro"
+                android:text="Renovar"
+                android:textAlignment="center"
+                android:textAllCaps="false"
+                android:textColor="@android:color/background_light"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                app:layout_constraintBottom_toTopOf="@+id/btnFinalizar"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <Button
+                android:id="@+id/btnFinalizar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/button_rounded_red"
+                android:fontFamily="@font/source_sans_pro"
+                android:text="Finalizar"
+                android:textAlignment="center"
+                android:textAllCaps="false"
+                android:textColor="@android:color/background_light"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent" />
+
+        </android.support.constraint.ConstraintLayout>
+
     </android.support.design.widget.CoordinatorLayout>
 
 

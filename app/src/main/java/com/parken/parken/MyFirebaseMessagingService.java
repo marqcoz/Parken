@@ -21,14 +21,11 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         Log.d(TAG, "From: " + remoteMessage.getFrom());
-  //      Log.d(TAG, "Notification body: " + remoteMessage.getNotification().getBody());
         Log.d(TAG, "Notification data: " + remoteMessage.getData());
-//        Log.d(TAG, "Notification data: " + remoteMessage.getNotification());
 
         try {
 
             JSONObject data = new JSONObject(remoteMessage.getData());
-
 
             if(data.getString("datos").equals("OK")){
 
@@ -36,38 +33,34 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 switch (idNoti){
 
                     case ParkenActivity.NOTIFICATION_NEW_SPACE:
-
-                        Notificacion.lanzar(getApplicationContext(), idNoti, "MAX", data.getString("espacioParken"));
+                        Notificacion.lanzar(getApplicationContext(),
+                                idNoti, "MAX", data.getString("espacioParken"));
                         break;
 
                     case ParkenActivity.NOTIFICATION_NEW_RECEIPT:
-
-                        Notificacion.lanzar(getApplicationContext(), idNoti, "MAX", null);
-
+                        Notificacion.lanzar(getApplicationContext(),
+                                idNoti, "MAX", null);
                         break;
 
                     case ParkenActivity.NOTIFICATION_CAR_FREE:
-
-                        Notificacion.lanzar(getApplicationContext(), idNoti, "DEFAULT", null);
-
+                        Notificacion.lanzar(getApplicationContext(),
+                                idNoti, "DEFAULT", null);
                         break;
 
 
                     case ParkenActivity.NOTIFICATION_INFO:
-
-                        Notificacion.lanzar(this, idNoti, "DEFAULT", "Notificacion" + "&"+ "Ejemplo");
+                        String notificacion;
+                        notificacion = data.getString("title")+"&"+data.getString("msg");
+                        Notificacion.lanzar(this, idNoti, "DEFAULT", notificacion);
                         break;
 
                         default:
                             break;
                 }
-
             }
-
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
     }
-
 }
+

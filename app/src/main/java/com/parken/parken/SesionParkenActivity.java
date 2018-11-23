@@ -59,7 +59,6 @@ public class SesionParkenActivity extends AppCompatActivity {
     private static final String PAYPAL_CLIENT = "Ae5YnMlrCaIo7Gl622Cvyb7r8eOEhQweVjxuvvxxVhJCbfZgtH4LLDOshoDQe_LO2iClRoMQID_YcOwW";
     private static final int PAYPAL_REQUEST_CODE = 7171;
     public static final String CURRENCY = "MXN";
-    //public static final String CURRENCY = "MXN";
     public static final String ACTIVITY_PARKEN = "ParkenActivity";
     public static final String ACTIVITY_SESION = "SesionParkenActivity";
     public static final String LABEL_SELECT_CAR = "Selecciona un vehículo...";
@@ -225,6 +224,7 @@ public class SesionParkenActivity extends AppCompatActivity {
         Intent intent = new Intent(SesionParkenActivity.this, PayPalService.class);
         intent.putExtra(PayPalService.EXTRA_PAYPAL_CONFIGURATION, paypalConfig);
         startService(intent);
+
 
         cargarDatos();
         if(estatus == ParkenActivity.LOAD){
@@ -1798,37 +1798,50 @@ public class SesionParkenActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == PAYPAL_REQUEST_CODE) {
             if(resultCode == RESULT_OK){
-                PaymentConfirmation confirmation = data.getParcelableExtra(PaymentActivity.EXTRA_RESULT_CONFIRMATION);
+                PaymentConfirmation confirmation = data
+                        .getParcelableExtra(PaymentActivity.EXTRA_RESULT_CONFIRMATION);
                 if(confirmation != null){
                     try {
 
                         String paymentDetails = confirmation.toJSONObject().toString(4);
-
-                        Snackbar snackbar = Snackbar.make(getWindow().getDecorView().findViewById(android.R.id.content), "PAGO EXITOSO", Snackbar.LENGTH_LONG);
+                        Snackbar snackbar = Snackbar.make(getWindow()
+                                .getDecorView()
+                                .findViewById(android.R.id.content),
+                                "PAGO EXITOSO", Snackbar.LENGTH_LONG);
                         View sbView = snackbar.getView();
-                        sbView.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.colorPrimaryDark));
+                        sbView.setBackgroundColor(ContextCompat.getColor(getApplicationContext(),
+                                R.color.colorPrimaryDark));
                         snackbar.show();
-                        activarSesionParken(session.infoId(), idSesionParken, String.valueOf(precioFinal+montoPrevio), String.valueOf(minutosParken+tiempoPrevio), String.valueOf(idVehiculo), strDate, String.valueOf(puntosRestante), opc);
-                        //Intent intent = new Intent(SesionParkenActivity.this, ParkenActivity.class);
-                        //startActivity(intent);
-
-
+                        activarSesionParken(session.infoId(),
+                                idSesionParken,
+                                String.valueOf(precioFinal+montoPrevio),
+                                String.valueOf(minutosParken+tiempoPrevio),
+                                String.valueOf(idVehiculo), strDate,
+                                String.valueOf(puntosRestante),
+                                opc);
 
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
                 }
             }else if(resultCode == Activity.RESULT_CANCELED){
-                Snackbar snackbar = Snackbar.make(getWindow().getDecorView().findViewById(android.R.id.content), "ERROR", Snackbar.LENGTH_LONG);
+                Snackbar snackbar = Snackbar.make(getWindow()
+                        .getDecorView()
+                        .findViewById(android.R.id.content),
+                        "ERROR", Snackbar.LENGTH_LONG);
                 View sbView = snackbar.getView();
-                sbView.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.colorPrimaryDark));
+                sbView.setBackgroundColor(ContextCompat.getColor(getApplicationContext(),
+                        R.color.colorPrimaryDark));
                 snackbar.show();
             }
         } else if (resultCode == PaymentActivity.RESULT_EXTRAS_INVALID){
-            Snackbar snackbar = Snackbar.make(getWindow().getDecorView().findViewById(android.R.id.content), "INVALIDO", Snackbar.LENGTH_LONG);
-        View sbView = snackbar.getView();
-        sbView.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.colorPrimaryDark));
-        snackbar.show();
+            Snackbar snackbar = Snackbar.make(getWindow().getDecorView()
+                            .findViewById(android.R.id.content),
+                    "INVALIDO", Snackbar.LENGTH_LONG);
+            View sbView = snackbar.getView();
+            sbView.setBackgroundColor(ContextCompat.getColor(getApplicationContext(),
+                    R.color.colorPrimaryDark));
+            snackbar.show();
         }
     }
 
