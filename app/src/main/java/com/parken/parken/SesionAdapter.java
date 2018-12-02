@@ -76,15 +76,8 @@ public class SesionAdapter extends RecyclerView.Adapter<SesionAdapter.ViewHolder
             holder.line.setVisibility(View.GONE);
         }else {
             holder.line.setVisibility(View.VISIBLE);
-            if(est.equals("SANCIONADA")){
-                holder.statusIcon.setImageResource(R.drawable.ic_alert_red);
-                holder.estatus.setTextColor(Color.argb(255,244,67,54));
-                holder.actions.setVisibility(View.VISIBLE);
-                holder.pagar.setVisibility(View.VISIBLE);
-                holder.finalizar.setVisibility(View.GONE);
-                holder.renovar.setVisibility(View.GONE);
 
-            }else{
+            if(est.equals("ACTIVA")){
                 holder.estatus.setTextColor(Color.argb(255,52,73,94));
                 holder.statusIcon.setVisibility(View.INVISIBLE);
                 holder.actions.setVisibility(View.VISIBLE);
@@ -92,6 +85,23 @@ public class SesionAdapter extends RecyclerView.Adapter<SesionAdapter.ViewHolder
                 holder.finalizar.setVisibility(View.VISIBLE);
                 holder.renovar.setVisibility(View.VISIBLE);
                 holder.tiempo.setVisibility(View.GONE);
+            }else{
+                if(est.equals("SANCIONADA")){
+                    //if(est.equals("SANCIONADA") || est.equals("REPORTADA"))
+                    holder.statusIcon.setImageResource(R.drawable.ic_alert_red);
+                    holder.estatus.setTextColor(Color.argb(255,244,67,54));
+                    holder.actions.setVisibility(View.VISIBLE);
+                    holder.pagar.setVisibility(View.VISIBLE);
+                    holder.finalizar.setVisibility(View.GONE);
+                    holder.renovar.setVisibility(View.GONE);
+                }else{
+                    holder.estatus.setTextColor(Color.argb(255,52,73,94));
+                    holder.statusIcon.setVisibility(View.INVISIBLE);
+                    holder.actions.setVisibility(View.GONE);
+                    holder.line.setVisibility(View.GONE);
+                }
+
+
             }
         }
 

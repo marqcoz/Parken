@@ -87,10 +87,18 @@ public class GeofenceOnTheWayTransitionsIntentService extends IntentService {
                         .getDefaultSharedPreferences(ParkenActivity.activityParken);
                 String distancia;
                 distancia = pref.getString("distance_zonaParken","1000");
+
+                Intent dialogIntent = new Intent(getApplicationContext(), ParkenActivity.class);
+                dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                dialogIntent.putExtra("Activity", ParkenActivity.INTENT_GEOFENCE_ON_THE_WAY);
+                dialogIntent.putExtra("ActivityStatus", ParkenActivity.FIND_PARKEN_SPACE);
+                startActivity(dialogIntent);
+                /*
                 buscarEspacioParken(String.valueOf(ParkenActivity.latitudDestino),
                         String.valueOf(ParkenActivity.longitudDestino),
                         distancia,
                         ParkenActivity.METHOD_PARKEN_SPACE_BOOKED);
+                 */
 
                 //actParken.dialogParken().show();
             }

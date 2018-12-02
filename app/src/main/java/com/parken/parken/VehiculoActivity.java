@@ -93,6 +93,7 @@ public class VehiculoActivity extends AppCompatActivity {
 
     }
 
+
     private void setupActionBar() {
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {

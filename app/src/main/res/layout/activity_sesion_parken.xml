@@ -174,7 +174,7 @@
 
                 <android.support.constraint.ConstraintLayout
                     android:id="@+id/constraintFechaFin"
-                    android:layout_width="190dp"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:visibility="gone"
                     app:layout_constraintEnd_toStartOf="@+id/constraintHora"
@@ -186,10 +186,10 @@
                         android:id="@+id/textViewFechaFin"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="8dp"
-                        android:layout_marginEnd="8dp"
                         android:layout_marginStart="16dp"
                         android:layout_marginTop="16dp"
+                        android:layout_marginEnd="8dp"
+                        android:layout_marginBottom="8dp"
                         android:fontFamily="@font/source_sans_pro"
                         android:text="Fecha final"
                         android:textSize="16sp"
@@ -203,9 +203,9 @@
                         android:id="@+id/textViewDateEnd"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="16dp"
-                        android:layout_marginEnd="8dp"
                         android:layout_marginStart="16dp"
+                        android:layout_marginEnd="8dp"
+                        android:layout_marginBottom="16dp"
                         android:fontFamily="@font/source_sans_pro"
                         android:text="4 Enero 1994"
                         android:textColor="@color/colorPrimary"
@@ -265,7 +265,7 @@
 
                 <android.support.constraint.ConstraintLayout
                     android:id="@+id/constraintHora"
-                    android:layout_width="190dp"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
                     android:visibility="gone"
@@ -274,12 +274,12 @@
 
                     <TextView
                         android:id="@+id/textViewHora"
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="8dp"
-                        android:layout_marginEnd="8dp"
                         android:layout_marginStart="16dp"
                         android:layout_marginTop="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:layout_marginBottom="8dp"
                         android:fontFamily="@font/source_sans_pro"
                         android:text="Hora final"
                         android:textSize="16sp"
@@ -291,11 +291,11 @@
 
                     <TextView
                         android:id="@+id/textViewHour"
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="16dp"
-                        android:layout_marginEnd="8dp"
                         android:layout_marginStart="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:layout_marginBottom="16dp"
                         android:inputType="text"
                         android:text="00:00"
                         android:textAppearance="@style/TextAppearance.AppCompat"
@@ -508,27 +508,31 @@
                 android:id="@+id/btnPayPal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
                 android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
                 android:layout_marginTop="16dp"
-                android:background="@color/colorPrimary"
+                android:layout_marginRight="16dp"
+                android:layout_marginBottom="8dp"
+                android:background="@drawable/button_rounded"
+                android:fontFamily="@font/source_sans_pro"
                 android:text="Pagar sesión Parken"
                 android:textAllCaps="?android:attr/windowOverscan"
-                android:textColor="@android:color/background_light" />
+                android:textColor="@android:color/background_light"
+                android:textStyle="bold" />
 
             <Button
                 android:id="@+id/btnCancelarPago"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
                 android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
                 android:layout_marginTop="8dp"
-                android:background="@color/colorPrimaryDark"
+                android:layout_marginRight="16dp"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/button_rounded_red"
+                android:fontFamily="@font/source_sans_pro"
                 android:text="Cancelar"
                 android:textAllCaps="?android:attr/windowOverscan"
-                android:textColor="@android:color/background_light" />
+                android:textColor="@android:color/background_light"
+                android:textStyle="bold" />
         </LinearLayout>
     </ScrollView>
 </android.support.constraint.ConstraintLayout>

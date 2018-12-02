@@ -3,6 +3,7 @@ package com.parken.parken;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
@@ -15,6 +16,7 @@ import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.TextView;
@@ -198,6 +200,9 @@ public class AddVehiculoActivity extends AppCompatActivity {
             //Enviamos al server
             showProgress(true);
             //sendCar(session.infoId());
+            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(mAddNewCarFormView.getWindowToken(), 0);
+
             if(origin.equals("VehiculoInfoActivity")){
                 editarVehiculo(idvehiculo,marcaString, modeloString);
             }else{
@@ -311,6 +316,7 @@ public class AddVehiculoActivity extends AppCompatActivity {
     }
 
     public AlertDialog dialogNewCarSuccess(final String idvehiculo) {
+
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
 
         builder.setTitle("Vehículo agregado")
@@ -319,65 +325,20 @@ public class AddVehiculoActivity extends AppCompatActivity {
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-
-                                if(origin.equals("VehiculoInfoActivity")){
-                                    vehInf.activityVehiculoInfo.finish();
-                                    vehAct.activityVehiculo.finish();
-                                    startActivity(new Intent(AddVehiculoActivity.this, VehiculoActivity.class));
-                                    finish();
-                                }else{
-
-                                    if(origin.equals("SesionParkenActivity")){
-                                        seParkenAct.activitySesionParken.textVehiculo.setText(modeloString+" - "+placaString);
-                                        seParkenAct.activitySesionParken.idVehiculo= idvehiculo;
-                                        seParkenAct.activitySesionParken.marcaVehiculo= marcaString;
-                                        seParkenAct.activitySesionParken.modeloVehiculo= modeloString;
-                                        seParkenAct.activitySesionParken.placaVehiculo= placaString;
-                                        finish();
-
-                                    }else{
-
-                                        startActivity(new Intent(AddVehiculoActivity.this, VehiculoActivity.class));
-                                        finish();
-                                    }
-                                }
+                                dialog.dismiss();
                             }
 
                         })
-                .setOnCancelListener(new DialogInterface.OnCancelListener() {
-                    @Override
-                    public void onCancel(DialogInterface dialog) {
-                        if(origin.equals("VehiculoInfoActivity")){
-                            vehInf.activityVehiculoInfo.finish();
-                            vehAct.activityVehiculo.finish();
-                            startActivity(new Intent(AddVehiculoActivity.this, VehiculoActivity.class));
-                            finish();
-                        }else{
-
-                            if(origin.equals("SesionParkenActivity")){
-                                seParkenAct.activitySesionParken.textVehiculo.setText(modeloString+" - "+placaString);
-                                seParkenAct.activitySesionParken.idVehiculo= idvehiculo;
-                                seParkenAct.activitySesionParken.marcaVehiculo= marcaString;
-                                seParkenAct.activitySesionParken.modeloVehiculo= modeloString;
-                                seParkenAct.activitySesionParken.placaVehiculo= placaString;
-                                finish();
-
-                            }else{
-
-                                startActivity(new Intent(AddVehiculoActivity.this, VehiculoActivity.class));
-                                finish();
-                            }
-                        }
-                    }
-                })
                 .setOnDismissListener(new DialogInterface.OnDismissListener() {
                     @Override
                     public void onDismiss(DialogInterface dialog) {
+
                         if(origin.equals("VehiculoInfoActivity")){
                             vehInf.activityVehiculoInfo.finish();
                             vehAct.activityVehiculo.finish();
-                            startActivity(new Intent(AddVehiculoActivity.this, VehiculoActivity.class));
                             finish();
+                            startActivity(new Intent(AddVehiculoActivity.this, VehiculoActivity.class));
+
                         }else{
 
                             if(origin.equals("SesionParkenActivity")){
@@ -389,9 +350,10 @@ public class AddVehiculoActivity extends AppCompatActivity {
                                 finish();
 
                             }else{
-
-                                startActivity(new Intent(AddVehiculoActivity.this, VehiculoActivity.class));
+                                vehAct.activityVehiculo.finish();
                                 finish();
+                                startActivity(new Intent(AddVehiculoActivity.this, VehiculoActivity.class));
+
                             }
                         }
                     }
@@ -404,7 +366,7 @@ public class AddVehiculoActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
 
         builder.setTitle("Vehículo agregado")
-                .setMessage("Las placas del vehículo ya están registradas. Se agregó el vehiculo a su cuenta.")
+                .setMessage("Las placas del vehículo ya están registradas. Se agregó el vehiculo a tu cuenta.")
                 .setPositiveButton("OK",
                         new DialogInterface.OnClickListener() {
                             @Override

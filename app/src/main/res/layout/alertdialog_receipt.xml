@@ -22,6 +22,7 @@
             android:id="@+id/textViewMC"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:fontFamily="@font/source_sans_pro"
             android:text="Monto Cobrado"
             android:textAlignment="center"
             android:textSize="12sp" />
@@ -30,6 +31,7 @@
             android:id="@+id/textViewMontoCobrado"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:fontFamily="@font/source_sans_pro"
             android:gravity="center_horizontal"
             android:text="$ 0.00 MXN"
             android:textColor="@color/common_google_signin_btn_text_dark_focused"
@@ -54,6 +56,7 @@
             android:id="@+id/textViewPU"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:fontFamily="@font/source_sans_pro"
             android:text="Puntos Parken utilizados"
             android:textAlignment="center"
             android:textSize="12sp" />
@@ -65,6 +68,7 @@
             android:layout_marginBottom="4dp"
             android:gravity="center_horizontal"
             android:text="$ 0.00 MXN"
+            android:fontFamily="@font/source_sans_pro"
             android:textColor="@android:color/background_dark"
             android:textSize="14sp"
             android:textStyle="bold"
@@ -76,6 +80,7 @@
             android:id="@+id/textViewPA"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:fontFamily="@font/source_sans_pro"
             android:text="Puntos Parken actuales"
             android:textAlignment="center"
             android:textSize="12sp" />
@@ -86,6 +91,7 @@
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
             android:text="$ 0.00 MXN"
+            android:fontFamily="@font/source_sans_pro"
             android:textSize="14sp"
             android:textStyle="bold"
             android:textColor="@color/common_google_signin_btn_text_dark_focused"
@@ -108,6 +114,7 @@
             android:id="@+id/textViewT"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:fontFamily="@font/source_sans_pro"
             android:text="Tiempo"
             android:textAlignment="center"
             android:textSize="12sp" />
@@ -117,6 +124,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="4dp"
+            android:fontFamily="@font/source_sans_pro"
             android:text="30 minutos"
             android:textAlignment="center"
             android:textColor="@color/common_google_signin_btn_text_dark_focused"
@@ -127,6 +135,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Recuerda liberar el espacio a las:"
+            android:fontFamily="@font/source_sans_pro"
             android:textAlignment="center"
             android:textSize="12sp" />
 
@@ -134,6 +143,7 @@
             android:id="@+id/textViewRecordatorio"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:fontFamily="@font/source_sans_pro"
             android:text="10:00 hrs"
             android:textAlignment="center"
             android:textColor="@color/common_google_signin_btn_text_dark_focused"
@@ -156,8 +166,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@color/colorPrimary"
+            android:background="@drawable/button_rounded"
+            android:fontFamily="@font/source_sans_pro"
             android:text="Aceptar"
-            android:textColor="@android:color/background_light" />
+            android:textAllCaps="false"
+            android:textColor="@android:color/background_light"
+            android:textStyle="bold" />
     </LinearLayout>
 </android.support.constraint.ConstraintLayout>

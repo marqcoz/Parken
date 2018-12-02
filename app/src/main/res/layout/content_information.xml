@@ -36,6 +36,7 @@ tools:showIn="@layout/activity_information">
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:layout_marginBottom="8dp"
+            android:fontFamily="@font/source_sans_pro"
             android:text="ERROR"
             android:textAlignment="center"
             android:textColor="@color/colorPrimary"

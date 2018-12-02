@@ -56,6 +56,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -198,6 +199,7 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
 
 
     public static final String MESSAGE_NO_EP= "No hay EP disponibles";
+    public static final String FIND_PARKEN_SPACE = "buscarelespacioparapartarlo";
     public static final String MESSAGE_FAILED= "Error al buscar";
     public static final String MESSAGE_EP_BOOKED= "EP Reservado";
     public static final String MESSAGE_AUTOMOVILISTA_BOOKED= "EP ya reservado";
@@ -253,11 +255,21 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
     private TextView txtEstatusEParken;
     private TextView txtDireccionEParken;
     private TextView txtIDEParken;
+    private TextView txtZonaParken;
+    private TextView txtLabelZonaParken;
     private TextView txtNotaEParken;
-    private TextView txtReloj;
+    private TextView txtRelojito2;
+    private TextView txtRelojito1;
     private TextView txtAlert;
     private TextView txtAlertNoInternet;
 
+    private TextView txtNubesita;
+    private ImageView imgNubesita;
+    private ConstraintLayout constraintInfoEP;
+    private ConstraintLayout constraintNoEP;
+    private TextView txtNotita;
+    private LinearLayout linearNotita;
+    private ConstraintLayout constraintRelojes;
     private LinearLayout alertLayout;
 
     private FloatingActionButton find;
@@ -317,6 +329,7 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
     ConnectivityManager connectivityManager;
 
     TimerTask timerTask;
+    TimerNotaTask timerNotaTask;
     TimerCheckMovementTask timerCheckMovementTask;
     DownloadTask downloadTask;
 
@@ -391,10 +404,12 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
     public boolean CONFIRMATION = false;
     public boolean TIME = false;
     public boolean MOVE = false;
+    public boolean TIME2 = false;
 
 
     boolean moveIn = false;
     boolean serverConnected = false;
+    boolean isReportSent= false;
     boolean obtenerVistaServer = false;
     int obtenerVistaServerResponse = 1;
     boolean vistaServer = false;
@@ -402,6 +417,7 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
     int obtenerValoresDelServerResponse = 0;
     boolean problemConnection = false;
 
+    boolean isOnTheWayGeofenceEntering = false;
     Snackbar snackbarNoServer;
 
     //----------------------------------------------------------------------------------------------
@@ -448,6 +464,9 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
 
     public static int minutoCheckMove;
     public static int segundoCheckMove;
+
+    public static int minutosNota = 0;
+    public static int segundosNota = 10;
 
     //----------------------------------------------------------------------------------------------
     ProgressBar progressTimer;
@@ -496,9 +515,6 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
         mGeofencingClient = LocationServices.getGeofencingClient(this);
         connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 
-
-
-
         //Initialize and register the notification receiver
         IntentFilter intentFilter = new IntentFilter();
 
@@ -535,13 +551,27 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
 
         alertReceipt = findViewById(R.id.AlertReceiptLayout);
 
-        txtEstatusEParken = findViewById(R.id.textViewEstatusEspacioParken);
+        txtEstatusEParken = findViewById(R.id.textViewEstatusEP);
         txtDireccionEParken = findViewById(R.id.textViewDireccionEspacioParken);
-        txtIDEParken = findViewById(R.id.textViewIDParken);
-        txtNotaEParken = findViewById(R.id.textViewNota);
-        txtReloj = findViewById(R.id.textViewRelojito);
+        txtIDEParken = findViewById(R.id.textViewIDEP);
+        txtZonaParken = findViewById(R.id.textViewZonaParken);
+        txtLabelZonaParken = findViewById(R.id.textViewLabelZP);
+
+        txtRelojito2 = findViewById(R.id.textViewRelojito2);
+        txtRelojito1 = findViewById(R.id.textViewRelojito);
         txtAlert = findViewById(R.id.textViewAlert);
         txtAlertNoInternet = findViewById(R.id.textViewAlertNoInternet);
+
+        txtNubesita = findViewById(R.id.textView13);
+        imgNubesita = findViewById(R.id.imageView4);
+
+        constraintInfoEP =findViewById(R.id.constraintLayoutInfoParken);
+        constraintNoEP = findViewById(R.id.constraintLayoutInfoEP);
+
+        linearNotita = findViewById(R.id.linearLayoutNotititas);
+        txtNotita = findViewById(R.id.textViewNotitas);
+
+        constraintRelojes = findViewById(R.id.constraintLayoutRelojes);
 
         volley = VolleySingleton.getInstance(getApplicationContext());
         fRequestQueue = volley.getRequestQueue();
@@ -664,9 +694,7 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
         renovar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 renovarSesion();
-
 
             }
         });
@@ -681,7 +709,8 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
             @Override
             public void onClick(View v) {
                 Log.d("Finalizar", "PressButton");
-                dialogFinishParken().show();
+                //dialogFinishParken().show();
+                dialogConfirmEndSP(4).show();
             }
         });
 
@@ -1157,6 +1186,8 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
         }
 
         vista = VIEW_PARKEN;
+        TIME = false;
+        TIME2 = false;
 
         Log.d("Parken", "Enter");
 
@@ -1180,9 +1211,10 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
             actionBar.setTitle("Parken");
             //Ocultar todos los botones
             turnDownButtons();
-            infoLay.setVisibility(View.INVISIBLE);
+            infoLay.setVisibility(View.GONE);
+            linearNotita.setVisibility(View.GONE);
 
-            //mMap.clear();
+            mMap.clear();
             readyMap();
 
             if (session.getToken().equals("")){
@@ -1217,6 +1249,14 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
                 if(timersOn && vistaServer){
                     serverConnected = true;
                     if(obtenerVistaServerResponse > 1 && obtenerValoresDelServerResponse > 1 && problemConnection) {
+                        if(dialogFailedValores!=null){
+                            dialogFailedValores.dismiss();
+                            dialogFailedValores = null;
+                        }
+                        if(dialogFailedVista!=null){
+                            dialogFailedVista.dismiss();
+                            dialogFailedVista = null;
+                        }
                         Snackbar snackbar = Snackbar.make(this.getWindow().getDecorView().findViewById(android.R.id.content), "Conexión con el servidor establecida", Snackbar.LENGTH_SHORT);
                         View sbView = snackbar.getView();
                         sbView.setBackgroundColor(ContextCompat.getColor(this, R.color.colorPrimary));
@@ -1344,7 +1384,6 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
 
             Log.d("OonTheWay", "Connected");
 
-            alertLay.setVisibility(View.GONE);
             //espacioParken(String.valueOf(latitudDestino), String.valueOf(longitudDestino));
 
 
@@ -1426,7 +1465,7 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
                 clearGeofence(GEOFENCE_ONTHEWAY);
 
                 //Cerramos el socket 'buscar espacio parken'.
-                mSocket.off(Jeison.SOCKET_FIND_PARKEN_SPACE, parkenSpace);
+                //mSocket.off(Jeison.SOCKET_FIND_PARKEN_SPACE, parkenSpace);
             }
             //Se cambian las coordendas destino por las del espacio parken
             //session.setLatDestino(session.getLatDestinoParken());
@@ -1439,8 +1478,8 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
 
             Log.d(TAG, "JSON: " + espacioParkenJson);
 
-            latitudEspacioParken = Double.parseDouble(jsonArrayCentro.getJSONObject(0).getString("longitud"));
-            longitudEspacioParken = Double.parseDouble(jsonArrayCentro.getJSONObject(0).getString("latitud"));
+            latitudEspacioParken = Double.parseDouble(jsonArrayCentro.getJSONObject(0).getString("latitud"));
+            longitudEspacioParken = Double.parseDouble(jsonArrayCentro.getJSONObject(0).getString("longitud"));
             latitudDestino = latitudEspacioParken;
             longitudDestino = longitudEspacioParken;
             idEspacioParken = jsonEspacioParken.getString("id");
@@ -1609,6 +1648,8 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
         String TAG = "parkenSession";
 
         vista = VIEW_PARKEN_SESSION_ACTIVE;
+        TIME = false;
+        TIME2 = false;
 
         if(time == LOAD){
             Log.d(TAG, "LOAD");
@@ -2171,7 +2212,7 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
-                            drawGeofence(new LatLng(latitudDestino, longitudDestino));
+                            //drawGeofence(new LatLng(latitudDestino, longitudDestino));
                         }
                     }
 
@@ -2189,7 +2230,7 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                    @Override
                    public void onSuccess(Void aVoid) {
-                       drawGeofence(new LatLng(latitudDestino, longitudDestino));
+                       //drawGeofence(new LatLng(latitudDestino, longitudDestino));
                    }
                }
             );
@@ -2208,7 +2249,7 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                                               @Override
                                               public void onSuccess(Void aVoid) {
-                                                  drawGeofence(new LatLng(latitudDestino, longitudDestino));
+                                                  //drawGeofence(new LatLng(latitudDestino, longitudDestino));
                                               }
                                           }
 
@@ -2255,6 +2296,9 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
                 googleApiClient,
                 activityRecognitionPendingIntent());
     }
+
+
+
 
 
     private Circle geoFenceLimits;
@@ -2344,6 +2388,8 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
 
             String idEP = "";
             String idStatusEP = "";
+            String zonaP = "";
+            String direccion = "";
             String nota = "";
 
             if(estatus == NO_PARKEN_SPACE){
@@ -2352,14 +2398,14 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
                 idStatusEP = "Espacios Parken no disponibles";
                 //obtenerDireccionJson(jsonArrayCentro.getJSONObject(0).getString("latitud"), jsonArrayCentro.getJSONObject(0).getString("longitud"));
                 //txtDireccionEParken.setText(jsonEspacioParken.getString("direccion"));
-                nota = "Aún no se ha reservado el espacio Parken";
+                nota = "No hay espacios Parken disponibles. No te preocupes, te notificaremos cuando alguno este disponible.";
 
-                //Mostrar en el layout la Info
-                infoLay.setVisibility(View.VISIBLE);
-
-                txtIDEParken.setText(idEP);
-                txtEstatusEParken.setText(idStatusEP);
-                txtNotaEParken.setText(nota);
+                //Esconder el layout la Info
+                infoLay.setVisibility(View.GONE);
+                //Habilitar el globito
+                //ballon.setVisibility(View.VISIBLE);
+                txtNotita.setText(nota);
+                linearNotita.setVisibility(View.VISIBLE);
 
                 return;
             }
@@ -2378,7 +2424,6 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
             if(estatus == PARKEN_SPACE_FOUND){
 
 
-
                 if(jsonEspacioParken.getString("id").equals(String.valueOf(session.getParkenSpace())) && infoLay.isShown()) {
                     //Log.d("IGUAL", "IGUAL");
                     return;
@@ -2393,11 +2438,31 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
 
 
                     session.setParkenSpace(Integer.parseInt(jsonEspacioParken.getString("id")));
-                    idEP = "ID Espacio Parken: " + session.getParkenSpace();
-                    idStatusEP = "El espacio Parken maś cercano se encuentra en:";
+                    idEP = String.valueOf(session.getParkenSpace());
+                    zonaP = jsonEspacioParken.getString("nombrezona");
+                    idStatusEP = "DISPONIBLE";
+                    txtEstatusEParken.setTextColor(Color.argb(255,46,204,113));
                     //obtenerDireccionJson(jsonArrayCentro.getJSONObject(0).getString("latitud"), jsonArrayCentro.getJSONObject(0).getString("longitud"));
-                    txtDireccionEParken.setText(jsonEspacioParken.getString("direccion"));
-                    nota = "Aún no se ha reservado el espacio Parken";
+                    direccion = jsonEspacioParken.getString("direccion");
+                    txtDireccionEParken.setText(direccion);
+                    //nota = "Recuerda: aún no se reserva el espacio Parken,  ";
+                    if(isReportSent){
+                        nota = "¡Gracias!\nSe ha generado el reporte exitosamente. Estamos solicitando otro espacio Parken para ti.";
+                        isReportSent = false;
+                    }else {
+                        nota = "El espacio Parken se reserva cuando te encuentres a 500 metros de tu destino o de la zona Parken.";
+                    }
+
+                        txtRelojito2.setVisibility(View.GONE);
+                        txtRelojito1.setVisibility(View.GONE);
+
+                    if (timerNotaTask != null) {
+                        timerNotaTask.cancel(true);
+                        timerNotaTask = null;
+                    }
+                    linearNotita.setVisibility(View.VISIBLE);
+                    timerNotaTask = new TimerNotaTask();
+                    timerNotaTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, minutosNota, segundosNota);
 
                 if(m != null){
                     m.remove();
@@ -2407,11 +2472,34 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
 
             if(estatus == PARKEN_SPACE_BOOKED){
                 session.setParkenSpace(Integer.parseInt(jsonEspacioParken.getString("id")));
-                idEP = "ID Espacio Parken: " + session.getParkenSpace();
-                idStatusEP = "Dirígite hacia:";
+                idEP = String.valueOf(session.getParkenSpace());
+                zonaP = jsonEspacioParken.getString("nombrezona");
+                idStatusEP = "RESERVADO";
+                txtEstatusEParken.setTextColor(Color.argb(255,244,67,54));
                 //obtenerDireccionJson(jsonArrayCentro.getJSONObject(0).getString("latitud"), jsonArrayCentro.getJSONObject(0).getString("longitud"));
-                txtDireccionEParken.setText(jsonEspacioParken.getString("direccion"));
-                nota = "Tienes 5 minutos para ocupar el espacio";
+                direccion = jsonEspacioParken.getString("direccion");
+                txtDireccionEParken.setText(direccion);
+                nota = "Tienes 5 minutos para ocupar el espacio.";
+
+                //Reloijitos
+                //Mostrar relojito 1 con el tiempo restante, se establece desde el TimerTask
+                constraintRelojes.setVisibility(View.VISIBLE);
+                txtRelojito1.setVisibility(View.VISIBLE);
+                //Mostrar relojito 2 con la leyenda de que se diriga
+                txtRelojito2.setVisibility(View.VISIBLE);
+                txtRelojito2.setText("Dirígite al espacio Parken reservado");
+                txtRelojito2.setBackgroundColor(Color.argb(255,46,204,113));
+
+
+
+                if(timerNotaTask != null){
+                    timerNotaTask.cancel(true);
+                    timerNotaTask = null;
+                }
+                linearNotita.setVisibility(View.VISIBLE);
+                timerNotaTask = new TimerNotaTask();
+                //timerNotaTask.execute(minutosNota, segundosNota);
+                timerNotaTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, minutosNota, segundosNota);
             }
 
                 //Mostrar en el layout la Info
@@ -2419,7 +2507,9 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
 
                 txtIDEParken.setText(idEP);
                 txtEstatusEParken.setText(idStatusEP);
-                txtNotaEParken.setText(nota);
+                txtLabelZonaParken.setText("zona Parken");
+                txtZonaParken.setText(zonaP);
+                txtNotita.setText(nota);
 
                  m = mMap.addMarker(new MarkerOptions().position(destinationEspacioParken));
 
@@ -2435,11 +2525,16 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
 
 
 
-                String idEP = "ID Espacio Parken: " + idEspacioParken;
-                String idStatusEP = "La ubicación de tu vehiculo " + modeloVehiculo + "- " + placaVehiculo;
+                String idEP = idEspacioParken;
+                //String idStatusEP = "La ubicación de tu vehiculo " + modeloVehiculo + "- " + placaVehiculo;
+                String vehiculo = modeloVehiculo + " - " + placaVehiculo;
+
+                String idStatusEP = "ESTACIONADO";
+                txtEstatusEParken.setTextColor(Color.argb(243, 156, 18,1));
                 //obtenerDireccionJson(jsonArrayCentro.getJSONObject(0).getString("latitud"), jsonArrayCentro.getJSONObject(0).getString("longitud"));
 
-                txtDireccionEParken.setText("Dirección: " + addressEspacioParken);
+                //txtDireccionEParken.setText("Dirección: ");
+                txtDireccionEParken.setText(addressEspacioParken);
 
                 String nota = "Timer: " + String.valueOf(timer);
 
@@ -2460,12 +2555,20 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
 
             //Mostrar en el layout la Info
             infoLay.setVisibility(View.VISIBLE);
-            txtReloj.setVisibility(View.VISIBLE);
 
             txtIDEParken.setText(idEP);
             txtEstatusEParken.setText(idStatusEP);
-            txtNotaEParken.setText(nota);
-            txtReloj.setText(reloj);
+            txtLabelZonaParken.setText("vehículo");
+            txtZonaParken.setText(vehiculo);
+            txtNotita.setText(nota);
+
+            constraintRelojes.setVisibility(View.VISIBLE);
+            txtRelojito1.setVisibility(View.VISIBLE);
+            txtRelojito1.setText(nota);
+            txtRelojito2.setVisibility(View.VISIBLE);
+            txtRelojito2.setText(reloj);
+            txtRelojito2.setBackgroundColor(Color.argb(255,52,73,94));
+
 
             //m = mMap.addMarker(new MarkerOptions().position(destinationEspacioParken));
     }
@@ -2476,22 +2579,30 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
         //Presiona Finalizar cuando hayas liberado el espacio
         //O serás acreedor a una sanción
 
-        String idEP = "ID Espacio Parken: " + idEspacioParken;
-        String idStatusEP = "La ubicación de tu vehiculo" + modeloVehiculo + "- " + placaVehiculo;
-        String nota = "Presiona Finalizar cuando hayas liberado el espacio o serás acreedor a una sanción";
-        String reloj = "Tienes 5 minutos para desocupar el espacio Parken";
-
-
+        String idEP = idEspacioParken;
+        String vehiculo = modeloVehiculo + " - " + placaVehiculo;
+        String idStatusEP = "ESTACIONADO";
+        txtDireccionEParken.setText(addressEspacioParken);
+        String nota = "Presiona FINALIZAR cuando hayas liberado el espacio Parken o serás acreedor a una sanción. Tienes 5 minutos de tolerancia.";
 
 
         //Mostrar en el layout la Info
         infoLay.setVisibility(View.VISIBLE);
-        txtReloj.setVisibility(View.VISIBLE);
+        constraintRelojes.setVisibility(View.VISIBLE);
+        txtRelojito2.setVisibility(View.GONE);
+        linearNotita.setVisibility(View.VISIBLE);
+        txtNotita.setVisibility(View.VISIBLE);
+        txtNotita.setText(nota);
 
         txtIDEParken.setText(idEP);
         txtEstatusEParken.setText(idStatusEP);
-        txtNotaEParken.setText(nota);
-        txtReloj.setText(reloj);
+        txtZonaParken.setText(vehiculo);
+        txtLabelZonaParken.setText("vehículo");
+
+        txtRelojito1.setVisibility(View.VISIBLE);
+        txtRelojito1.setText("");
+
+
 
         //m = mMap.addMarker(new MarkerOptions().position(destinationEspacioParken));
     }
@@ -2508,7 +2619,8 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
         String url = getDirectionsUrl(origen, destino);
         downloadTask = new ParkenActivity.DownloadTask();
         // Start downloading json data from Google Directions API
-        downloadTask.execute(url);
+        //downloadTask.execute(url);
+        downloadTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, url);
     }
 
     /**
@@ -2867,18 +2979,18 @@ case "Maps":
     }
 
     public void turnDownButtons(){
-        find.setVisibility(View.INVISIBLE);
-        navegar.setVisibility(View.INVISIBLE);
-        cancelar.setVisibility(View.INVISIBLE);
-        renovar.setVisibility(View.INVISIBLE);
-        finalizar.setVisibility(View.INVISIBLE);
         find.setVisibility(View.GONE);
         navegar.setVisibility(View.GONE);
         cancelar.setVisibility(View.GONE);
         renovar.setVisibility(View.GONE);
         finalizar.setVisibility(View.GONE);
-
         alertReceipt.setVisibility(View.GONE);
+        linearNotita.setVisibility(View.GONE);
+        constraintRelojes.setVisibility(View.GONE);
+        infoLay.setVisibility(View.GONE);
+
+        txtRelojito1.setVisibility(View.GONE);
+
     }
 
 
@@ -2949,7 +3061,8 @@ case "Maps":
         find.setVisibility(View.VISIBLE);
         navegar.setVisibility(View.INVISIBLE);
         cancelar.setVisibility(View.INVISIBLE);
-        infoLay.setVisibility(View.INVISIBLE);
+        infoLay.setVisibility(View.GONE);
+        linearNotita.setVisibility(View.GONE);
         session.setCancel(true);
         session.setOnTheWay(false);
         vista = VIEW_PARKEN;
@@ -2964,10 +3077,22 @@ case "Maps":
 
 
         // Start downloading json data from Google Directions API
-        downloadTask.cancel(true);
-        downloadTask = null;
+        if(downloadTask!=null){
+            downloadTask.cancel(true);
+            downloadTask = null;
+        }
+
+
+
+        if(timerNotaTask != null){
+            timerNotaTask.cancel(true);
+            timerNotaTask = null;
+        }
+
         mMap.clear();
+
         //parken();
+        fRequestQueue.cancelAll(VIEW_ON_THE_WAY);
         cancelAll(CANCEL);
     }
 
@@ -2983,8 +3108,10 @@ case "Maps":
         requestEspacioParken = false;
 
         // Start downloading json data from Google Directions API
-        downloadTask.cancel(true);
-        downloadTask = null;
+        if(downloadTask!=null){
+            downloadTask.cancel(true);
+            downloadTask = null;
+        }
 
         mMap.clear();
 
@@ -2993,9 +3120,9 @@ case "Maps":
         }
 
         find.setVisibility(View.VISIBLE);
-        navegar.setVisibility(View.INVISIBLE);
-        cancelar.setVisibility(View.INVISIBLE);
-        infoLay.setVisibility(View.INVISIBLE);
+        navegar.setVisibility(View.GONE);
+        cancelar.setVisibility(View.GONE);
+        infoLay.setVisibility(View.GONE);
         session.setCancel(true);
         session.setOnTheWay(false);
         vista = VIEW_PARKEN;
@@ -3268,10 +3395,12 @@ case "Maps":
 
                             }
 
+                            fRequestQueue.cancelAll(VIEW_PARKEN);
                             return;
 
                         } catch (JSONException e) {
                             e.printStackTrace();
+                            fRequestQueue.cancelAll(VIEW_PARKEN);
                             return;
                         }
                     }
@@ -3282,12 +3411,13 @@ case "Maps":
                         showProgress(false);
                         //onConnectionFailed(error.getMessage());
                         Log.d("ZonaParken", "Error Respuesta en JSON: " + error.getMessage());
+                        fRequestQueue.cancelAll(VIEW_PARKEN);
                         dialogParkenZoneFailed().show();
                         return;
                     }
                 });
 
-        fRequestQueue.add(jsArrayRequest);
+        fRequestQueue.add(jsArrayRequest).setTag(VIEW_PARKEN);
 
     }
 
@@ -3801,7 +3931,7 @@ case "Maps":
         parametros.put("distancia", distancia);
         parametros.put("idAutomovilista", session.infoId());
 
-        JsonObjectRequest jsArrayRequest = new JsonObjectRequest(
+        jsArrayRequest = new JsonObjectRequest(
                 Request.Method.POST,
                 Jeison.URL_DRIVER_FIND_PARKEN_SPACE,
                 new JSONObject(parametros),
@@ -3809,8 +3939,18 @@ case "Maps":
                     @Override
                     public void onResponse(JSONObject response) {
 
+                        jsArrayRequest.cancel();
+
                         try{
+
                             if(response.getString("success").equals("1")){
+
+                                alertLay.setVisibility(View.GONE);
+                                constraintInfoEP.setVisibility(View.VISIBLE);
+                                constraintNoEP.setVisibility(View.VISIBLE);
+                                imgNubesita.setVisibility(View.GONE);
+                                txtNubesita.setVisibility(View.GONE);
+
 
                                 Log.d("BuscandoEspacioParken", response.toString());
                                 mostrarInfoEspacioParken(response.toString(), PARKEN_SPACE_FOUND);
@@ -3819,7 +3959,9 @@ case "Maps":
                                     apartarEspacioParken(response.toString(), session.infoId());
 
                                 }else{
-                                    mostrarInfoEspacioParken(response.toString(), PARKEN_SPACE_FOUND);
+                                    if(!isOnTheWayGeofenceEntering){
+                                        mostrarInfoEspacioParken(response.toString(), PARKEN_SPACE_FOUND);
+                                    }
                                 }
                                 //espacioParken[0]= response.getString("id");
                                 //espacioParken[1]= response.getString("zona");
@@ -3829,13 +3971,35 @@ case "Maps":
 
                             }else{
                                 Log.d("BuscandoEspacioParken", "Espacios no disponibles");
+                                alertLay.setVisibility(View.GONE);
+                                constraintInfoEP.setVisibility(View.VISIBLE);
+                                constraintNoEP.setVisibility(View.VISIBLE);
+                                imgNubesita.setVisibility(View.GONE);
+                                txtNubesita.setVisibility(View.GONE);
+                                linearNotita.setVisibility(View.GONE);
                                 mostrarInfoEspacioParken(response.toString(), NO_PARKEN_SPACE);
+                                if(origen.equals(METHOD_PARKEN_SPACE_BOOKED)){
+                                    vista = VIEW_PARKEN;
+                                    dialogNoParkenSpaces().show();
+                                    selectView(vista, PARKEN_ONNEWINTENT, null);
+                                }
                                 return;
 
                             }
 
                         } catch (JSONException e) {
                             e.printStackTrace();
+                            alertLay.setVisibility(View.VISIBLE);
+                            constraintInfoEP.setVisibility(View.GONE);
+                            constraintNoEP.setVisibility(View.GONE);
+                            imgNubesita.setVisibility(View.VISIBLE);
+                            txtNubesita.setVisibility(View.VISIBLE);
+                            linearNotita.setVisibility(View.GONE);
+                            txtAlertNoInternet.setText("No es posible conectarse con el servidor");
+                            if(timerNotaTask != null){
+                                timerNotaTask.cancel(true);
+                                timerNotaTask = null;
+                            }
                             dialogFailed().show();
                             return;
                         }
@@ -3845,13 +4009,23 @@ case "Maps":
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         Log.d("BuscandoEspacioParken", "Error Respuesta en JSON: " + error.getMessage());
-                        //Mostrar el mensaje cuando haya un error en la pantalla del usuario
-                        //Ocultar la barra y mostrar la barra indicando error de conexión
+                        //Mostrando que no hay conexión a Internet
+                        alertLay.setVisibility(View.VISIBLE);
+                        constraintInfoEP.setVisibility(View.GONE);
+                        constraintNoEP.setVisibility(View.GONE);
+                        imgNubesita.setVisibility(View.VISIBLE);
+                        txtNubesita.setVisibility(View.VISIBLE);
+                        linearNotita.setVisibility(View.GONE);
+                        txtAlertNoInternet.setText("No es posible conectarse con el servidor");
+                        if(timerNotaTask != null){
+                            timerNotaTask.cancel(true);
+                            timerNotaTask = null;
+                        }
                         return;
                     }
                 });
 
-        fRequestQueue.add(jsArrayRequest);
+        fRequestQueue.add(jsArrayRequest).setTag(VIEW_ON_THE_WAY);
 
     }
 
@@ -3898,7 +4072,7 @@ case "Maps":
 
     //Método que actualiza el estatus del espacio Parken asignado
     //public void apartarEspacioParken(final String idEspacio, final String zona, final String idAutomovilista) {
-    public void apartarEspacioParken(String response, final String idAutomovilista) throws JSONException {
+    public void apartarEspacioParken2(String response, final String idAutomovilista) throws JSONException {
 
         JSONObject jsonObject = new JSONObject(response);
         HashMap<String, String> parametros = new HashMap();
@@ -3947,6 +4121,127 @@ case "Maps":
 
         fRequestQueue.add(jsArrayRequest);
     }
+
+
+    public void apartarEspacioParken(final String responseJson, final String idAutomovilista) throws JSONException {
+
+        fRequestQueue.cancelAll(VIEW_ON_THE_WAY);
+
+        final JSONObject jsonObject = new JSONObject(responseJson);
+
+        HashMap<String, String> parametros = new HashMap();
+        parametros.put("idEspacioParken", jsonObject.getString("id"));
+        parametros.put("idZonaParken",jsonObject.getString("zona"));
+        parametros.put("idAutomovilista", idAutomovilista);
+
+        JsonObjectRequest jsArrayRequest = new JsonObjectRequest(
+                Request.Method.POST,
+                Jeison.URL_DRIVER_PARKEN_SPACE_BOOK,
+                new JSONObject(parametros),
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+
+                        Intent dialogIntent = new Intent(getApplicationContext(), ParkenActivity.class);
+                        dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        dialogIntent.putExtra("Activity", ParkenActivity.INTENT_GEOFENCE_ON_THE_WAY);
+
+                        try{
+
+                            if(response.getString("success").equals("1")){
+
+                                Log.d("EspacioParken", response.toString());
+
+                                //actParken.setParkenSpaceBooked(Integer.parseInt(jsonObject.getString("id")), jsonObject.toString());
+                                //sendNotification("Espacio Parken reservado", jsonObject);
+
+                                /*
+                                dialogIntent.putExtra("ActivityStatus", ParkenActivity.MESSAGE_EP_BOOKED);
+                                dialogIntent.putExtra("idEspacioParkenAsignado", jsonObject.getString("id"));
+                                dialogIntent.putExtra("idSesionParken", response.getString("idSesionParken"));
+                                dialogIntent.putExtra("jsonEspacioParken", jsonObject.toString());
+                                Log.d("Activity", ParkenActivity.INTENT_GEOFENCE_ON_THE_WAY);
+                                startActivity(dialogIntent);
+                                */
+
+                                vista = VIEW_PARKEN_SPACE_BOOKED;
+                                //espacioParkenJson = intent.getStringExtra("jsonEspacioParken");
+                                espacioParkenJson = jsonObject.toString();
+                                //idSesionParken = intent.getStringExtra("idSesionParken");
+                                idSesionParken = response.getString("idSesionParken");
+
+
+                                selectView(vista, PARKEN_ONNEWINTENT, null);
+
+                            }else{
+                                Log.d("EspacioParken", response.toString());
+
+                                if(response.getString("success").equals("2")){
+                                    //actParken.dialogBookedDone().show();
+                                    //actParken.setViewParkenSpaceBooked(ParkenActivity.VIEW_PARKEN_SPACE_BOOKED);
+                                    //actParken.setViewParkenSpaceBooked(ParkenActivity.VIEW_PARKEN);
+                                    //dialogIntent.putExtra("ActivityStatus", ParkenActivity.MESSAGE_AUTOMOVILISTA_BOOKED);
+                                    dialogBookedDone().show();
+                                    vista = VIEW_PARKEN;
+                                    selectView(vista, PARKEN_ONNEWINTENT, null);
+
+                                }else{
+                                    //actParken.dialogFailed().show();
+                                    //actParken.setViewParkenSpaceBooked(ParkenActivity.VIEW_PARKEN);
+                                    //dialogIntent.putExtra("ActivityStatus", ParkenActivity.MESSAGE_FAILED);
+                                    dialogFailed().show();
+                                    vista = VIEW_PARKEN;
+                                    selectView(vista, PARKEN_ONNEWINTENT, null);
+
+                                }
+
+
+                                //startActivity(dialogIntent);
+
+                            }
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            //actParken.dialogFailed().show();
+                            //actParken.setViewParkenSpaceBooked(ParkenActivity.VIEW_PARKEN);
+                            //dialogIntent.putExtra("ActivityStatus", ParkenActivity.MESSAGE_FAILED);
+                            //startActivity(dialogIntent);
+                            dialogFailed().show();
+                            vista = VIEW_PARKEN;
+                            selectView(vista, PARKEN_ONNEWINTENT, null);
+
+                        }
+
+                        return;
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.d("EspacioParken", "Error Respuesta en JSON: " + error.getMessage());
+                        //actParken.dialogFailed().show();
+                        //actParken.setViewParkenSpaceBooked(ParkenActivity.VIEW_PARKEN);
+                        /*
+                        Intent dialogIntent = new Intent(getApplicationContext(), ParkenActivity.class);
+                        dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        dialogIntent.putExtra("Activity", ParkenActivity.INTENT_GEOFENCE_ON_THE_WAY);
+                        dialogIntent.putExtra("ActivityStatus", ParkenActivity.MESSAGE_FAILED);
+                        startActivity(dialogIntent);
+                        */
+                        dialogFailed().show();
+                        vista = VIEW_PARKEN;
+                        selectView(vista, PARKEN_ONNEWINTENT, null);
+
+                        return;
+                        //Mostrar el mensaje cuando haya un error en la pantalla del usuario
+                    }
+                });
+
+        fRequestQueue.add(jsArrayRequest);
+    }
+
+
+
 
     //Método que crea un reporte de la zona parken
     //public void apartarEspacioParken(final String idEspacio, final String zona, final String idAutomovilista) {
@@ -4001,6 +4296,7 @@ case "Maps":
                                         dialogParken.dismiss();
                                         dialogParken = null;
                                     }
+                                    isReportSent = true;
                                     cancelarEspacioParkenReservado(REPORT);
                                     //eliminarSesionParken(idSesionParken, REPORT);
                                 }
@@ -4839,6 +5135,16 @@ case "Maps":
 
                                         break;
 
+                                    case FIND_PARKEN_SPACE:
+                                        //Aqui vamos a apartar el espacio despues
+                                        isOnTheWayGeofenceEntering = true;
+                                        SharedPreferences pref = PreferenceManager
+                                                .getDefaultSharedPreferences(ParkenActivity.activityParken);
+                                        String distancia;
+                                        distancia = pref.getString("distance_zonaParken","1000");
+                                        buscarEspacioParken(String.valueOf(latitudDestino), String.valueOf(longitudDestino), distancia, METHOD_PARKEN_SPACE_BOOKED);
+                                        break;
+
                                     default:
 
                                         vista = VIEW_PARKEN;
@@ -4872,7 +5178,9 @@ case "Maps":
                             //Iniciar otro timer para manejar el tiempo de respuesta del automovilista
                             timerTask = new TimerTask();
                             Log.d(TAG, String.valueOf(minutoDialogParken) + " " + String.valueOf(segundoDialogParken));
-                            timerTask.execute(minutoDialogParken, segundoDialogParken);
+                            //timerTask.execute(minutoDialogParken, segundoDialogParken);
+                            timerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, minutoDialogParken, segundoDialogParken);
+
 
                             //Mostrar el dialogParken
                             if (dialogParken == null) {
@@ -5143,7 +5451,7 @@ case "Maps":
         if ( status.isSuccess() ) {
             //saveGeofence();
             //drawGeofence(new LatLng(session.getLatDestino(),session.getLngDestino()));
-            drawGeofence(new LatLng(latitudDestino, longitudDestino));
+            //drawGeofence(new LatLng(latitudDestino, longitudDestino));
         } else {
             // inform about fail
         }
@@ -5836,7 +6144,7 @@ case "Maps":
         sendBroadcast(closeIntent);
         AlertDialog.Builder builder = new AlertDialog.Builder(activityParken);
         builder.setTitle("Cancelar")
-                .setMessage("¿Desea cancelar la solicitud de un espacio Parken?")
+                .setMessage("¿Deseas cancelar la solicitud de un espacio Parken?")
                 .setNegativeButton("Cancelar",new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
                         dialog.cancel();
@@ -5926,7 +6234,7 @@ case "Maps":
     public AlertDialog dialogNoParkenZone() {
         AlertDialog.Builder builder = new AlertDialog.Builder(activityParken);
         builder.setTitle("Lo sentimos")
-                .setMessage("No hay zonas Parken cercanas a tu destino. Estamos trabajando para estar en mas puntos de la ciudad.")
+                .setMessage("No hay zonas Parken cercanas a tu destino. Estamos trabajando para estar en más puntos de la ciudad.")
                 .setPositiveButton("OK",
                         new DialogInterface.OnClickListener() {
                             @Override
@@ -5971,7 +6279,7 @@ case "Maps":
         final AlertDialog.Builder builder = new AlertDialog.Builder(activityParken);
 
         builder.setTitle("Error al buscar zonas Parken")
-                .setMessage("No se puede realizar la conexión con el servidor. Intente de nuevo.")
+                .setMessage("No se puede realizar la conexión con el servidor. Intenta de nuevo.")
                 .setPositiveButton("OK",
                         new DialogInterface.OnClickListener() {
                             @Override
@@ -6001,6 +6309,80 @@ case "Maps":
      * AsynkTask
      * Código con las tareas asincronas para mostrar la ruta en la app
      */
+
+    public class TimerNotaTask extends AsyncTask<Integer, Integer, Boolean> {
+
+        @Override
+        protected void onPreExecute() {
+            Log.e("Timer", "Iniciando timer");
+            linearNotita.setVisibility(View.VISIBLE);
+
+        }
+
+        @Override
+        protected void onProgressUpdate(Integer... values) {
+            linearNotita.setVisibility(View.VISIBLE);
+            super.onProgressUpdate(values);
+        }
+
+        @Override
+        protected Boolean doInBackground(Integer... params) {
+            try {
+                int aux;
+                for(int j = params[0]; j >= 0 ; j--){
+                    if(j == params[0]){ //Si es al inicio entonces
+                        aux = params[1];
+                    }else{
+                        aux = 59;
+                    }
+                    //for(int i = 59; i >=0; i--){
+                    for(int i = aux; i >=0; i--){
+                        //for(int i = 3; i >=0; i--){
+
+
+                        if(!isCancelled()){
+
+                            Thread.currentThread();
+                            Thread.sleep(1000);
+                            publishProgress(i,j, params[0]);
+                            Log.e("Timer", String.valueOf(i));
+                        }
+                        else {
+                            minPausa = j;
+                            segPausa = i;
+                            break;
+                        }
+                    }
+
+                }
+
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+            linearNotita.setVisibility(View.GONE);
+            Log.e("Timer", "postExecute");
+
+        }
+
+        @Override
+        protected void onCancelled() {
+            Log.e("Timer", "onCancelled");
+            linearNotita.setVisibility(View.GONE);
+            super.onCancelled();
+
+        }
+    }
+
+
+
+
+
     private class DownloadTask extends AsyncTask<String, Void, String> {
 
         @Override
@@ -6157,13 +6539,24 @@ case "Maps":
 
             //Aqui es donde indicamos en donde vamos a mostrarlo
             if(vista.equals(VIEW_PARKEN_SPACE_BOOKED)){
-                String msj3 = "para llegar al espacio asignado";
-                txtNotaEParken.setText(msj1 + min +":"+ seg +  msj2 + msj3);
+                //String msj3 = "para llegar al espacio asignado";
+                String msj3 = "";
+                txtRelojito1.setVisibility(View.VISIBLE);
+                txtRelojito1.setText(msj1 + min +":"+ seg +  msj2 + msj3);
             }
             if(vista.equals(VIEW_PARKEN_SESSION_ACTIVE)) {
                 String msj3 = "";
                 msj1 = "Tiempo restante: ";
-                txtNotaEParken.setText(msj1 + values[1] + ":" + values[0]);
+                txtRelojito1.setVisibility(View.VISIBLE);
+                if(values[0]< 10){
+                    txtRelojito1.setText(msj1 + values[1] + ":" + "0"+values[0]);
+                }else {
+                    txtRelojito1.setText(msj1 + values[1] + ":" + values[0]);
+                }
+
+                if(values[1]==0) {
+                    txtRelojito2.setBackgroundColor(Color.argb(255, 254, 67, 54));
+                }
                 //txtNotaEParken.setText(msj1 + min + ":" + seg + msj2 + msj3);
                 //txtNotaEParken.setText("Tiempo restante: " + SesionParkenActivity.obtenerTiempoString((long) values[1]));
                 //txtNotaEParken.setText(msj1 + min + ":" + seg + msj2 + msj3);
@@ -6229,7 +6622,7 @@ case "Maps":
 
                         //Ejecutamos el nuevo TimerCheck que se mantendrá sensando all el tiempo
                         //Si alguna variable se activa
-                        dialogEmpty("Min: " + String.valueOf(minTTP) + " Seg: " + String.valueOf(segTTP)).show();
+                        //dialogEmpty("Min: " + String.valueOf(minTTP) + " Seg: " + String.valueOf(segTTP)).show();
                         timerCheckMovementTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, minTTP, segTTP, 4);
                     }else{
 
@@ -6250,7 +6643,7 @@ case "Maps":
 
                             //Ejecutamos el nuevo TimerCheck que se mantendrá sensando all el tiempo
                             //Si alguna variable se activa
-                            dialogEmpty("Min: " + String.valueOf(minTTP) + " Seg: " + String.valueOf(segTTP)).show();
+                            //dialogEmpty("Min: " + String.valueOf(minTTP) + " Seg: " + String.valueOf(segTTP)).show();
                             timerCheckMovementTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, minTTP, segTTP, 4);
 
                             obtenerVistaServer = false;
@@ -6362,8 +6755,12 @@ case "Maps":
                 //Se activa la variable TIME
                 TIME = true;
 
+                //SE activa la variable TIME 2
+                TIME2 = true;
+
                 renovar.setEnabled(false);
-                renovar.setBackgroundColor(Color.parseColor("#757575"));
+                //renovar.setBackgroundColor(Color.parseColor("#757575"));
+                renovar.setBackground(getDrawable(R.drawable.button_rounded_gray));
 
                 //Actualizar el banner SESION PARKEN FINALIZADA
                 mostrarInfoSesionParkenFinalizada();
@@ -6430,6 +6827,16 @@ case "Maps":
 
 
             Log.d(TAG, "Minutos: " + String.valueOf(values[1]) + " Segundos: " + String.valueOf(values[0]));
+
+            if(TIME2) {
+                String msj1 = "Tiempo restante: ";
+                txtRelojito1.setVisibility(View.VISIBLE);
+                if (values[0] < 10) {
+                    txtRelojito1.setText(msj1 + values[1] + ":" + "0" + values[0]);
+                } else {
+                    txtRelojito1.setText(msj1 + values[1] + ":" + values[0]);
+                }
+            }
 
             if(values[2] == 1){ //"move"
 

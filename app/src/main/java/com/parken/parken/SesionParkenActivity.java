@@ -1434,11 +1434,12 @@ public class SesionParkenActivity extends AppCompatActivity {
             activarOpciones(3);
         }
         if(opc == 3){
-            paypal.setVisibility(View.VISIBLE);
+            //paypal.setVisibility(View.VISIBLE);
             //obtenerPaypal();
-            txtPaypal.setText("marqc.oz@test.com");
+            //txtPaypal.setText("marqc.oz@test.com");
             pay.setEnabled(true);
-            pay.setBackgroundColor(Color.parseColor("#FF34495E"));
+            pay.setBackground(getDrawable(R.drawable.button_rounded));
+            //pay.setBackgroundColor(Color.parseColor("#FF34495E"));
         }
 
     }
@@ -1520,7 +1521,8 @@ public class SesionParkenActivity extends AppCompatActivity {
             calendarFechaFinalFija = new GregorianCalendar(selectedYear,selectedMonth,selectedDay, 0,0);
             //txtHora.setText("Selecciona...");
             pay.setEnabled(false);
-            pay.setBackgroundColor(Color.parseColor("#757575"));
+            pay.setBackground(getDrawable(R.drawable.button_rounded_gray));
+            //pay.setBackgroundColor(Color.parseColor("#757575"));
             //pay.setVisibility(View.INVISIBLE);;
             montoPrevio = 0.0;
             tiempoPrevio = 0;
@@ -1597,7 +1599,8 @@ public class SesionParkenActivity extends AppCompatActivity {
             txtTiempo.setText(LABEL_SELECT_TIME);
             pay.setEnabled(false);
             pay.setText("Renovar sesión Parken");
-            pay.setBackgroundColor(Color.parseColor("#757575"));
+            pay.setBackground(getDrawable(R.drawable.button_rounded_gray));
+            //pay.setBackgroundColor(Color.parseColor("#757575"));
             //pay.setVisibility(View.INVISIBLE);;
             opc = "2";
 
@@ -1828,7 +1831,7 @@ public class SesionParkenActivity extends AppCompatActivity {
                 Snackbar snackbar = Snackbar.make(getWindow()
                         .getDecorView()
                         .findViewById(android.R.id.content),
-                        "ERROR", Snackbar.LENGTH_LONG);
+                        "PAGO CANCELADO", Snackbar.LENGTH_LONG);
                 View sbView = snackbar.getView();
                 sbView.setBackgroundColor(ContextCompat.getColor(getApplicationContext(),
                         R.color.colorPrimaryDark));
@@ -1837,7 +1840,7 @@ public class SesionParkenActivity extends AppCompatActivity {
         } else if (resultCode == PaymentActivity.RESULT_EXTRAS_INVALID){
             Snackbar snackbar = Snackbar.make(getWindow().getDecorView()
                             .findViewById(android.R.id.content),
-                    "INVALIDO", Snackbar.LENGTH_LONG);
+                    "ERROR CON PAYPAL", Snackbar.LENGTH_LONG);
             View sbView = snackbar.getView();
             sbView.setBackgroundColor(ContextCompat.getColor(getApplicationContext(),
                     R.color.colorPrimaryDark));
