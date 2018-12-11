@@ -60,7 +60,13 @@ public class SesionAdapter extends RecyclerView.Adapter<SesionAdapter.ViewHolder
             inifin = fi +" " + sesion.get(position).getHoraInicio() + " hrs - " + ff + " " + sesion.get(position).getHoraFinal() + " hrs";
         }
         holder.fechas.setText(inifin);
-        String time = sesion.get(position).getTiempo() + " minutos";
+        String time;
+        if(sesion.get(position).getTiempo().equals("1")){
+            time = sesion.get(position).getTiempo() + " minuto";
+        }else{
+            time = sesion.get(position).getTiempo() + " minutos";
+        }
+
         holder.tiempo.setText(time);
         String dinero = "$ "+String.valueOf(sesion.get(position).getMonto())+"0 MXN";
         holder.monto.setText(dinero);
@@ -84,7 +90,8 @@ public class SesionAdapter extends RecyclerView.Adapter<SesionAdapter.ViewHolder
                 holder.pagar.setVisibility(View.GONE);
                 holder.finalizar.setVisibility(View.VISIBLE);
                 holder.renovar.setVisibility(View.VISIBLE);
-                holder.tiempo.setVisibility(View.GONE);
+                holder.minutos.setVisibility(View.VISIBLE);
+                holder.tiempo.setVisibility(View.VISIBLE);
             }else{
                 if(est.equals("SANCIONADA")){
                     //if(est.equals("SANCIONADA") || est.equals("REPORTADA"))
@@ -94,11 +101,14 @@ public class SesionAdapter extends RecyclerView.Adapter<SesionAdapter.ViewHolder
                     holder.pagar.setVisibility(View.VISIBLE);
                     holder.finalizar.setVisibility(View.GONE);
                     holder.renovar.setVisibility(View.GONE);
+                    holder.minutos.setVisibility(View.VISIBLE);
+                    holder.tiempo.setVisibility(View.VISIBLE);
                 }else{
                     holder.estatus.setTextColor(Color.argb(255,52,73,94));
                     holder.statusIcon.setVisibility(View.INVISIBLE);
                     holder.actions.setVisibility(View.GONE);
                     holder.line.setVisibility(View.GONE);
+                    holder.minutos.setVisibility(View.GONE);
                 }
 
 

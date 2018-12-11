@@ -45,89 +45,72 @@ public class ActivityRecognizedService extends IntentService {
                     Log.e("ActivityRecogition", "In Vehicle: " + activity.getConfidence());
 
                     if( activity.getConfidence() >= 75 ) {
-                        //changeMovement(DetectedActivity.IN_VEHICLE);
-                        NotificationCompat.Builder builder;
-                        builder = new NotificationCompat.Builder(this, "holo");
-                        builder.setContentText( "Are you in vehicle?" );
-                        builder.setSmallIcon( R.drawable.ic_parken_notification );
-                        builder.setContentTitle( getString( R.string.app_name ) );
-                        NotificationManagerCompat.from(this).notify(0, builder.build());}
+                        changeMovement(DetectedActivity.IN_VEHICLE);
+                    }
                     break;
                 }
                 case DetectedActivity.ON_BICYCLE: {
                     Log.e( "ActivityRecogition", "On Bicycle: " + activity.getConfidence() );
                     if( activity.getConfidence() >= 75 ) {
-                        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "holo");
-                        builder.setContentText( "Are you on bike?" );
-                        builder.setSmallIcon( R.mipmap.ic_launcher );
-                        builder.setContentTitle( getString( R.string.app_name ) );
-                        NotificationManagerCompat.from(this).notify(0, builder.build());}
+                        changeMovement(DetectedActivity.ON_BICYCLE);
+                    }
                     break;
                 }
                 case DetectedActivity.ON_FOOT: {
                     Log.e( "ActivityRecogition", "On Foot: " + activity.getConfidence() );
                     if( activity.getConfidence() >= 75 ) {
-                        changeMovement(DetectedActivity.IN_VEHICLE);
-                        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "holo");
-                        builder.setContentText( "Are you parado?" );
-                        builder.setSmallIcon( R.mipmap.ic_launcher );
-                        builder.setContentTitle( getString( R.string.app_name ) );
-                        NotificationManagerCompat.from(this).notify(0, builder.build());}
+                        changeMovement(DetectedActivity.ON_FOOT);
+                    }
                     break;
                 }
                 case DetectedActivity.RUNNING: {
                     Log.e( "ActivityRecogition", "Running: " + activity.getConfidence() );
+                    if( activity.getConfidence() >= 75 ) {
+                        changeMovement(DetectedActivity.RUNNING);
+                    }
                     break;
                 }
                 case DetectedActivity.STILL: {
                     Log.e( "ActivityRecogition", "Still: " + activity.getConfidence() );
                     if( activity.getConfidence() >= 75 ) {
-                        changeMovement(DetectedActivity.IN_VEHICLE);
-                        NotificationCompat.Builder builder = new NotificationCompat.Builder(this,"holo");
-                        builder.setContentText( "Are you stilling?" );
-                        builder.setSmallIcon( R.drawable.ic_parken_notification);
-                        builder.setColor(Color.BLACK);
-                        builder.setContentTitle( getString( R.string.app_name ) );
-                        NotificationManagerCompat.from(this).notify(0, builder.build());}
+                        changeMovement(DetectedActivity.STILL);
+                    }
                     break;
                 }
                 case DetectedActivity.TILTING: {
                     Log.e( "ActivityRecogition", "Tilting: " + activity.getConfidence() );
+                    if( activity.getConfidence() >= 75 ) {
+                        changeMovement(DetectedActivity.TILTING);
+                    }
                     break;
                 }
                 case DetectedActivity.WALKING: {
                     Log.e( "ActivityRecogition", "Walking: " + activity.getConfidence() );
-
                     if( activity.getConfidence() >= 75 ) {
-                        changeMovement(DetectedActivity.IN_VEHICLE);
-                        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "holo");
-                        builder.setContentText( "Are you walking?" );
-                        builder.setSmallIcon( R.mipmap.ic_launcher );
-                        builder.setContentTitle( getString( R.string.app_name ) );
-                        NotificationManagerCompat.from(this).notify(0, builder.build());
+                        changeMovement(DetectedActivity.WALKING);
                     }
-
                     break;
                 }
 
                 case DetectedActivity.UNKNOWN: {
                     Log.e( "ActivityRecogition", "Unknown: " + activity.getConfidence() );
+                    if( activity.getConfidence() >= 75 ) {
+                        changeMovement(DetectedActivity.UNKNOWN);
+                    }
                     break;
                 }
             }
         }
     }
 
-    private void changeMovement(int estatus){
+    private void changeMovement(int act){
 
-        /*
-        Intent dialogIntent = new Intent(getApplicationContext(), ParkenActivity.class);
-        dialogIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        dialogIntent.putExtra("Activity", ParkenActivity.MOVEMENTS);
-        dialogIntent.putExtra("ActivityStatus", estatus);
-        startActivity(dialogIntent);
-        */
-        //Se modificará DRIVING a TRUE
-        session.setDriving(true);
+        if(act == DetectedActivity.STILL || act == DetectedActivity.WALKING || act == DetectedActivity.IN_VEHICLE){
+            session.setDriving(true);
+            Log.e( "ActivityRecogition", "Actividad: " + act + ". DRIVE ON");
+            //Notificacion.lanzar(getApplicationContext(),
+              //      ParkenActivity.NOTIFICATION_INFO,
+                //    "DEFAULT", "DetectedActivity&Actividad: STILL");
+        }
     }
 }

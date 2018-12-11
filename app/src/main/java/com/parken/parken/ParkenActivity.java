@@ -158,9 +158,12 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
     private static final String VIEW_PARKEN_REPORT = "sancionPendiente";
     private static final String VIEW_DIALOG_PARKEN = "mostrarDialogParken";
     private static final String VIEW_DRIVER_PAYING = "sesionParkenPagando";
-    private static final float RADIUS_GEOFENCE_PARKEN_SPACE_BOOKED = 500f;
-    private static final float RADIUS_GEOFENCE_PARKEN_SESSION = 500f;
-    private static final float RADIUS_GEOFENCE_ON_THE_WAY = 500f;
+    private static final String VIEW_PAYING = "pagando";
+    private static final String VIEW_NO_PAYING = "nopago";
+    private static final String VIEW_PAYING_CANCELED = "pagocancelado";
+    private static final float RADIUS_GEOFENCE_PARKEN_SPACE_BOOKED = 1000f;
+    private static final float RADIUS_GEOFENCE_PARKEN_SESSION =100f;
+    private static final float RADIUS_GEOFENCE_ON_THE_WAY = 600f;
     public static final String METHOD_PARKEN_SPACE_BOOKED = "GEOFENCE_IN";
     public static final String METHOD_PARKEN_SPACE_CHECK = "GEOFENCE_OUT";
     public static final int LOAD = 100;
@@ -170,6 +173,12 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
     private static final int REPORT = 12309;
     private static final int CANCEL = 2395;
     private static final int FINISH = 7338;
+    private static final int REPORT_FAILED = 38273;
+    private static final int DIALOG_PARKEN_FAILED =2392;
+    private static final int PAYING =30192;
+    private static final int PAYING_CANCELED = 5430;
+    private static final int NO_PAYING = 2012;
+    private static final int SESSION_DELETED_FAILED = 1029;
     public static final int PARKEN_SPACE_BOOKED = 50;
     public static final int PARKEN_SPACE_FOUND = 60;
     public static final int NO_PARKEN_SPACE = 80;
@@ -206,6 +215,7 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
     public static final String MESSAGE_PAY_FAILED = "Fallo el pago";
     public static final String MESSAGE_PAY_SUCCESS = "Pago exitoso";
     public static final String MESSAGE_PAY_CANCELED = "pagocancelado";
+    public static final String MESSAGE_PAY_LOADING_FAILED = "nocargoactivitypay";
 
     public static final String NOTIFICATIONS = "notificationcenter";
     public static final int NOTIFICATION_INFO = 1;
@@ -348,7 +358,16 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
     private AlertDialog dialogFailedValores;
     private AlertDialog dialogParken;
     private AlertDialog dialogEPTimeOut;
+    private AlertDialog dialogDialogParkenOut;
     private AlertDialog dialogConfirmEndSP;
+
+    private AlertDialog dialogFailedCancelEPBooked;
+    private AlertDialog dialogSuccessCancelEPBooked;
+    private AlertDialog dialogFailedSolicitarOtro;
+    private AlertDialog dialogConfirmCancelBooking;
+    private AlertDialog dialogNoPayLoading;
+    private AlertDialog dialogPayCancelled;
+    private AlertDialog dialogPayTimeOut;
     //----------------------------------------------------------------------------------------------
 
     public static ParkenActivity activityParken;
@@ -405,6 +424,11 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
     public boolean TIME = false;
     public boolean MOVE = false;
     public boolean TIME2 = false;
+
+    public static final int MOVIMIENTO = 1;
+    //public static final int  = 2;
+    //public static final int MOVIMIENTO = 3;
+    //public static final int MOVIMIENTO = 4;
 
 
     boolean moveIn = false;
@@ -598,7 +622,7 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
         googleApiClient.connect();
 
         //Conectar socket
-        connectSocket();
+        //connectSocket();
 
 
         //Listener de todos los botones
@@ -709,8 +733,8 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
             @Override
             public void onClick(View v) {
                 Log.d("Finalizar", "PressButton");
-                //dialogFinishParken().show();
-                dialogConfirmEndSP(4).show();
+                dialogFinishParken().show();
+                //dialogConfirmEndSP(4).show();
             }
         });
 
@@ -1199,9 +1223,8 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
             Notificacion.cerrar(this, NOTIFICATION_PAYING);
             Notificacion.cerrar(this, NOTIFICATION_NEW_SPACE);
 
-            //Activar GPS
-            //Eliminar todas las geocercas
             clearGeofence("AllGeofences");
+
 
             //Rediseñar XML
             //Establecer el tiempo predeterminado de la pantalla
@@ -1287,7 +1310,6 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
         } else {
 
             // No hay conexión a Internet en este momento
-
             alertLay.setVisibility(View.VISIBLE);
             txtAlertNoInternet.setText("No hay conexión a Internet");
             find.setVisibility(View.GONE);
@@ -1404,7 +1426,7 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
 
             //mSocket.emit(Jeison.SOCKET_FIND_PARKEN_SPACE, new JSONObject(parametros));
 
-            drawRoute(origin, destino);
+            //drawRoute(origin, destino);
 
 
         }else {
@@ -1452,6 +1474,10 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
             try {
                 //Limpiar el mapa
                 mMap.clear();
+                if(downloadTask != null){
+                    downloadTask.cancel(true);
+                    downloadTask = null;
+                }
 
                 //Mantenemos la pantalla siempre encendida, durante el trayecto
                 getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -1593,13 +1619,14 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
                 centerMap(EP);
             }
 
-
             //Obtenemos las coordenadas de la posicion
+            if(lastLocation != null){
             LatLng origin = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
             //destino = new LatLng(latitudDestino, longitudDestino);
 
             //Dibujamos la ruta
-            drawRoute(origin, destino);
+            //drawRoute(origin, destino);
+            }
 
         }
         else {
@@ -1653,14 +1680,14 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
 
         if(time == LOAD){
             Log.d(TAG, "LOAD");
-            Notificacion.lanzar(this, NOTIFICATION_SESSION_PARKEN, "DEFAULT", "iniciado&" + String.valueOf(fechaPago.get(Calendar.HOUR_OF_DAY)) + ":" + String.valueOf(fechaPago.get(Calendar.MINUTE)) + "hrs");
+
         }
         if(time == REFRESH){
             Log.d(TAG, "REFRESH");
         }
         if(time == RELOAD){
             Log.d(TAG, "RELOAD");
-            Notificacion.lanzar(this, NOTIFICATION_SESSION_PARKEN, "DEFAULT", "renovado&" + String.valueOf(fechaPago.get(Calendar.HOUR_OF_DAY)) + ":" + String.valueOf(fechaPago.get(Calendar.MINUTE)) + "hrs");
+            //Notificacion.lanzar(this, NOTIFICATION_SESSION_PARKEN, "DEFAULT", "renovado&" + String.valueOf(fechaPago.get(Calendar.HOUR_OF_DAY)) + ":" + String.valueOf(fechaPago.get(Calendar.MINUTE)) + "hrs");
         }
 
         LatLng markerEspacioParken = new LatLng(latitudEspacioParken, longitudEspacioParken);
@@ -1734,8 +1761,6 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
                 //Añadimos la nueva geocerca
                 startGeofence(GEOFENCE_PARKEN_SESSION_ACTIVE);
 
-                //Iniciamos el ActivityRecognition
-                activateActivityRecognition();
 
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -2042,9 +2067,8 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
                 .setRequestId(id)
                 .setCircularRegion( latLng.latitude, latLng.longitude, radius)
                 .setExpirationDuration( GEO_DURATION )
-                .setTransitionTypes( Geofence.GEOFENCE_TRANSITION_ENTER
-                        | Geofence.GEOFENCE_TRANSITION_EXIT | Geofence.GEOFENCE_TRANSITION_DWELL)
-                .setLoiteringDelay(1000)
+                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
+                .setLoiteringDelay(100)
                 .build();
     }
 
@@ -2063,26 +2087,12 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                                                   @Override
                                                   public void onSuccess(Void aVoid) {
+                                                      //dialogEmpty("Se eliminó la geocerca ON_THE_WAY exitosamente").show();
                                                  //drawGeofence(new LatLng(latitudDestino, longitudDestino));
                                                   }
                                               }
 
                         );
-
-                /*
-                LocationServices.GeofencingApi.removeGeofences(googleApiClient, createGeofenceOnTheWayPendingIntent()).setResultCallback(new ResultCallback<Status>() {
-                    @Override
-                    public void onResult(@NonNull Status status) {
-                        if (status.isSuccess()) {
-                            Log.d(TAG, "ClearGeofenceOnTheWay" );
-                            // remove drawing
-                            //removeGeofenceDraw();
-                        } else {
-                            Log.d(TAG, "ERROR ClearGeofenceOnTheWay" );
-                        }
-                    }
-                });
-                */
 
                 break;
 
@@ -2092,6 +2102,7 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                                                   @Override
                                                   public void onSuccess(Void aVoid) {
+                                                      //dialogEmpty("Se eliminó la geocerca PARKEN_BOOKED exitosamente").show();
                                                       //drawGeofence(new LatLng(latitudDestino, longitudDestino));
                                                   }
                                               }
@@ -2212,7 +2223,7 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
-                            //drawGeofence(new LatLng(latitudDestino, longitudDestino));
+                            drawGeofence(new LatLng(latitudDestino, longitudDestino));
                         }
                     }
 
@@ -2230,7 +2241,7 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                    @Override
                    public void onSuccess(Void aVoid) {
-                       //drawGeofence(new LatLng(latitudDestino, longitudDestino));
+                       drawGeofence(new LatLng(latitudDestino, longitudDestino));
                    }
                }
             );
@@ -2249,7 +2260,7 @@ public class ParkenActivity extends AppCompatActivity implements OnMapReadyCallb
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                                               @Override
                                               public void onSuccess(Void aVoid) {
-                                                  //drawGeofence(new LatLng(latitudDestino, longitudDestino));
+                                                  drawGeofence(new LatLng(latitudDestino, longitudDestino));
                                               }
                                           }
 
@@ -2781,7 +2792,7 @@ case "Maps":
         //TIEMPO = FALSE
 
         //Ejecutamos el TimerCheck
-        //Para sensar durante un tiempo corto
+        //Comenzamos a sensar durante un tiempo corto
         //Finalizamos la sesión PROCESANDO
         //REGRESAMOS los puntos Parken
         //Como ya esta sensando esperamos a que termine
@@ -2930,9 +2941,10 @@ case "Maps":
         if(vista != null){
             if(vista.equals(VIEW_ON_THE_WAY))
                 dialogConfirmEspacioParkenOut().show();
-            if(vista.equals(VIEW_PARKEN_SPACE_BOOKED))
-                dialogConfirmCancelBooking().show();
-
+            if(vista.equals(VIEW_PARKEN_SPACE_BOOKED)) {
+                dialogConfirmCancelBooking = dialogConfirmCancelBooking();
+                dialogConfirmCancelBooking.show();
+            }
         }
     }
 
@@ -3024,8 +3036,73 @@ case "Maps":
             vista = VIEW_ON_THE_WAY;
         }
 
-        if(estatus == TIMEOUT || estatus == CANCEL || estatus == FINISH){
+        if(estatus == TIMEOUT || estatus == CANCEL || estatus == FINISH
+                || estatus == REPORT_FAILED || estatus == SESSION_DELETED_FAILED
+                || estatus == DIALOG_PARKEN_FAILED
+                || estatus == PAYING
+                || estatus == PAYING_CANCELED
+                || estatus == NO_PAYING){
 
+
+            if(estatus == TIMEOUT){
+
+                if(dialogSuccessCancelEPBooked != null){
+                    dialogSuccessCancelEPBooked = dialogSuccessCancelEPBooked();
+                    dialogSuccessCancelEPBooked.show();
+                }
+
+                if(timerTask != null){
+                    timerTask.cancel(true);
+                    timerTask = null;
+                }
+
+            }
+
+            if(estatus == REPORT_FAILED){
+                if(dialogFailedSolicitarOtro == null) {
+                    dialogFailedSolicitarOtro = dialogFailedSolicitarOtro("601");
+                    dialogFailedSolicitarOtro.show();
+                }
+            }
+
+            if(estatus == SESSION_DELETED_FAILED){
+                if(dialogFailedSolicitarOtro == null) {
+                    dialogFailedSolicitarOtro = dialogFailedSolicitarOtro("602");
+                    dialogFailedSolicitarOtro.show();
+                }
+            }
+
+            if(estatus == DIALOG_PARKEN_FAILED){
+
+                Notificacion.lanzar(getApplicationContext(), NOTIFICATION_PARKEN_OUT, "DEFAULT", null);
+
+                if(dialogDialogParkenOut == null) {
+                    dialogDialogParkenOut = dialogDialogParkenOut();
+                    dialogDialogParkenOut.show();
+                }
+            }
+
+            if(estatus == PAYING){
+                if(dialogNoPayLoading == null) {
+                    dialogNoPayLoading = dialogNoPayLoading();
+                    dialogNoPayLoading.show();
+                }
+            }
+
+            if(estatus == PAYING_CANCELED){
+                if(dialogPayCancelled == null) {
+                    dialogPayCancelled = dialogPayCancelled();
+                    dialogPayCancelled.show();
+                }
+            }
+
+            if(estatus == NO_PAYING){
+                if(dialogPayTimeOut == null) {
+                    dialogPayTimeOut =
+                            dialogPayTimeOut();
+                    dialogPayTimeOut.show();
+                }
+            }
 
             latitudDestino = 0.0;
             longitudDestino = 0.0;
@@ -3035,6 +3112,11 @@ case "Maps":
 
             longitudEspacioParken = 0.0;
             latitudEspacioParken = 0.0;
+
+            if(timerNotaTask != null){
+                timerNotaTask.cancel(true);
+                timerNotaTask = null;
+            }
 
             vista = VIEW_PARKEN;
 
@@ -3102,45 +3184,36 @@ case "Maps":
 
         Log.d(TAG, "True");
 
-        Notificacion.cerrar(this, NOTIFICATION_EP_BOOKED);
-
-        //turnDownPreferences();
-        requestEspacioParken = false;
-
-        // Start downloading json data from Google Directions API
-        if(downloadTask!=null){
-            downloadTask.cancel(true);
-            downloadTask = null;
-        }
-
-        mMap.clear();
-
-        if(lastLocation != null) {
-            newMap(lastLocation.getLatitude(), lastLocation.getLongitude(), false);
-        }
-
-        find.setVisibility(View.VISIBLE);
-        navegar.setVisibility(View.GONE);
-        cancelar.setVisibility(View.GONE);
-        infoLay.setVisibility(View.GONE);
-        session.setCancel(true);
-        session.setOnTheWay(false);
-        vista = VIEW_PARKEN;
-        session.setVista(vista);
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setTitle("Parken");
-        //cancelNotificationOnTheWay();
-
-        //parken();
-        //cancelNotificationEPBooked();
         if(origin == CANCEL){
-            timerTask.cancel(true);
+            //Si cancela el usuario, entonces esperamos la respuesta del servidor
             eliminarSesionParken(idSesionParken, CANCEL);
         }
         if(origin == REPORT){
+            //Si se cancela la solicitud porque se generó un reporte, entonces
+            //esperamos la respuesta del servidor
             eliminarSesionParken(idSesionParken, REPORT);
             STATE_ON_THE_WAY = null;
+
+            Notificacion.cerrar(this, NOTIFICATION_EP_BOOKED);
+
+            //turnDownPreferences();
+            requestEspacioParken = false;
+
+            // Start downloading json data from Google Directions API
+            if(downloadTask!=null){
+                downloadTask.cancel(true);
+                downloadTask = null;
+            }
+
+            mMap.clear();
+
+            if(lastLocation != null) {
+                newMap(lastLocation.getLatitude(), lastLocation.getLongitude(), false);
+            }
+
         }
+
+        showProgress(false);
 
     }
 
@@ -3165,11 +3238,11 @@ case "Maps":
         //if(session.getVista() != null) {
         if(vista != null) {
             //Log.d("LocationChangedViewShPr",session.getVista());
-            //Log.d("LocationChangedVista", vista);
+            Log.d("LocationChangedVista", vista);
             //selectView(session.getVista(), METHOD_ON_LOCATION_CHANGED);
             selectView(vista, METHOD_ON_LOCATION_CHANGED, null);
         }else{
-            //Log.d("LocationChangedVista", "NULL");
+            Log.d("LocationChangedVista", "NULL");
         }
 
     }
@@ -4268,17 +4341,29 @@ case "Maps":
                             Log.d("CrearReporte", response.toString());
                             Log.d("CrearReporte", response.getString("tipoReporte"));
 
+                            showProgress(false);
                             if(response.getString("success").equals("1")){
                                 //Eliminar sesionParken
                                 //idSesionParken
                                 if(vista.equals(VIEW_DIALOG_PARKEN)){
+                                    eliminarSesionParken(idSesionParken, DIALOG_PARKEN_FAILED);
+                                }
+                                if(vista.equals(VIEW_PAYING)){
+                                    eliminarSesionParken(idSesionParken, PAYING);
+                                }
 
-                                    eliminarSesionParken(idSesionParken, TIMEOUT);
+                                if(vista.equals(VIEW_PAYING_CANCELED)){
+                                    eliminarSesionParken(idSesionParken, PAYING_CANCELED);
+                                }
 
+                                if(vista.equals(VIEW_NO_PAYING)){
+                                    eliminarSesionParken(idSesionParken, NO_PAYING);
                                 }
 
                                 //if(response.getString("tipoReporte").equals(StatusReembolso)){
-                                if(vista.equals(VIEW_PARKEN_SESSION_ACTIVE) || response.getString("tipoReporte").equals("REEMBOLSO") || response.getString("tipoReporte").equals("ENDOFTIME") ||
+                                if(vista.equals(VIEW_PARKEN_SESSION_ACTIVE) ||
+                                        response.getString("tipoReporte").equals("REEMBOLSO") ||
+                                        response.getString("tipoReporte").equals("ENDOFTIME") ||
                                         response.getString("tipoReporte").equals("TIMEOUT") ||
                                         response.getString("tipoReporte").equals("PAGO")){
 
@@ -4304,9 +4389,32 @@ case "Maps":
 
                             }else{
                                 showProgress(false);
-                                //Algo salió mal
-                                dialogFailed().show();
 
+                                switch (vista){
+                                    case VIEW_ON_THE_WAY:
+                                        cancelAll(REPORT_FAILED);
+                                        break;
+
+                                    case VIEW_DIALOG_PARKEN:
+                                        cancelAll(DIALOG_PARKEN_FAILED);
+                                        break;
+
+                                    case VIEW_PAYING:
+                                        cancelAll(PAYING);
+                                        break;
+
+                                    case VIEW_PAYING_CANCELED:
+                                        cancelAll(PAYING_CANCELED);
+                                        break;
+
+                                    case VIEW_NO_PAYING:
+                                        cancelAll(NO_PAYING);
+                                        break;
+
+                                        default:
+                                            dialogFailed().show();
+                                            break;
+                                }
                             }
 
                             return;
@@ -4314,7 +4422,31 @@ case "Maps":
                         } catch (JSONException e) {
                             e.printStackTrace();
                             showProgress(false);
-                            dialogFailed().show();
+                            switch (vista){
+                                case VIEW_ON_THE_WAY:
+                                    cancelAll(REPORT_FAILED);
+                                    break;
+
+                                case VIEW_DIALOG_PARKEN:
+                                    cancelAll(DIALOG_PARKEN_FAILED);
+                                    break;
+
+                                case VIEW_PAYING:
+                                    cancelAll(PAYING);
+                                    break;
+
+                                case VIEW_PAYING_CANCELED:
+                                    cancelAll(PAYING_CANCELED);
+                                    break;
+
+                                case VIEW_NO_PAYING:
+                                    cancelAll(NO_PAYING);
+                                    break;
+
+                                default:
+                                    dialogFailed().show();
+                                    break;
+                            }
                             return;
                         }
                     }
@@ -4324,7 +4456,31 @@ case "Maps":
                     public void onErrorResponse(VolleyError error) {
                         showProgress(false);
                         Log.d("CrearReporte", "Error Respuesta en JSON: " + error.getMessage());
-                        dialogFailed().show();
+                        switch (vista){
+                            case VIEW_ON_THE_WAY:
+                                cancelAll(REPORT_FAILED);
+                                break;
+
+                            case VIEW_DIALOG_PARKEN:
+                                cancelAll(DIALOG_PARKEN_FAILED);
+                                break;
+
+                            case VIEW_PAYING:
+                                cancelAll(PAYING);
+                                break;
+
+                            case VIEW_NO_PAYING:
+                                cancelAll(NO_PAYING);
+                                break;
+
+                            case VIEW_PAYING_CANCELED:
+                                cancelAll(PAYING_CANCELED);
+                                break;
+
+                            default:
+                                dialogFailed().show();
+                                break;
+                        }
                         //Mostrar el mensaje cuando haya un error en la pantalla del usuario
                         return;
                     }
@@ -4354,13 +4510,63 @@ case "Maps":
                             if(response.getString("success").equals("1")){
                                 showProgress(false);
 
-                                // cancelamos la solicitud
+                                //Pienso que no debemos esperar a que la respuesta sea exitosa para cancelar.
+                                //La petición debe cancelarse, siempre, pero bueno, lo dejaré asi mientras.
+
                                 cancelAll(estatus);
 
                             }else{
                                 showProgress(false);
-                                //Algo salió mal
-                                dialogFailed().show();
+
+                                //Si la eliminación no fue correcta despues de reservar el espacio,
+                                switch (vista){
+                                    case VIEW_PARKEN_SPACE_BOOKED:
+                                        //Se cancela el proceso, el método es el encargado de seleccionar la vista Parken
+
+                                        //Si el usuario solicita la eliminación y no se logra eliminar la sesion
+                                        //Entonces, le alertamos que no se puede cancelar la petción por el momento, que intente mas tarde.
+                                        //Pero no podemos mandarlo, directamente a que pida otro espacio. debe saber que no es posible y que debe volver a intentar cancelarlo.
+                                        if(estatus == CANCEL){
+                                            dialogFailedCancelEPBooked = dialogFailedCancelEPBooked();
+                                            dialogFailedCancelEPBooked.show();
+                                        }
+                                        if(estatus == TIMEOUT){
+                                            cancelAll(estatus);
+                                        }
+
+                                        break;
+
+                                    case VIEW_ON_THE_WAY:
+                                        if (estatus == REPORT){
+                                            //Entra aqui en reporte
+                                            cancelAll(SESSION_DELETED_FAILED);
+                                        }
+                                        break;
+
+                                    case VIEW_DIALOG_PARKEN:
+                                            cancelAll(estatus);
+                                        break;
+
+
+                                    case VIEW_PAYING:
+                                        cancelAll(estatus);
+                                        break;
+
+                                    case VIEW_PAYING_CANCELED:
+                                        cancelAll(estatus);
+                                        break;
+
+                                    case VIEW_NO_PAYING:
+                                        cancelAll(NO_PAYING);
+                                        break;
+
+                                        default:
+                                            //Algo salió mal
+                                            dialogFailed().show();
+                                            break;
+
+                                }
+
 
                             }
 
@@ -4369,7 +4575,48 @@ case "Maps":
                         } catch (JSONException e) {
                             e.printStackTrace();
                             showProgress(false);
-                            dialogFailed().show();
+                            switch (vista){
+                                case VIEW_PARKEN_SPACE_BOOKED:
+                                    //Se cancela el proceso, el método es el encargado de seleccionar la vista Parken
+                                    if(estatus == CANCEL){
+                                        dialogFailedCancelEPBooked = dialogFailedCancelEPBooked();
+                                        dialogFailedCancelEPBooked.show();
+                                    }
+                                    if(estatus == TIMEOUT){
+                                        cancelAll(estatus);
+                                    }
+
+                                    break;
+
+                                case VIEW_DIALOG_PARKEN:
+                                    cancelAll(estatus);
+                                    break;
+
+                                case VIEW_ON_THE_WAY:
+                                    if (estatus == REPORT){
+                                        //Entra aqui en reporte
+                                        cancelAll(SESSION_DELETED_FAILED);
+                                    }
+                                    break;
+
+                                case VIEW_PAYING:
+                                    cancelAll(estatus);
+                                    break;
+
+                                case VIEW_PAYING_CANCELED:
+                                    cancelAll(estatus);
+                                    break;
+
+                                case VIEW_NO_PAYING:
+                                    cancelAll(NO_PAYING);
+                                    break;
+
+                                default:
+                                    //Algo salió mal
+                                    dialogFailed().show();
+                                    break;
+
+                            }
                             return;
                         }
                     }
@@ -4379,8 +4626,49 @@ case "Maps":
                     public void onErrorResponse(VolleyError error) {
                         showProgress(false);
                         Log.d("EliminarSesion", "Error Respuesta en JSON: " + error.getMessage());
-                        dialogFailed().show();
-                        //Mostrar el mensaje cuando haya un error en la pantalla del usuario
+
+                        switch (vista){
+                            case VIEW_PARKEN_SPACE_BOOKED:
+                                //Se cancela el proceso, el método es el encargado de seleccionar la vista Parken
+                                if(estatus == CANCEL){
+                                    dialogFailedCancelEPBooked = dialogFailedCancelEPBooked();
+                                    dialogFailedCancelEPBooked.show();
+                                }
+                                if(estatus == TIMEOUT){
+                                    cancelAll(estatus);
+                                }
+
+                                break;
+
+                            case VIEW_ON_THE_WAY:
+                                if (estatus == REPORT){
+                                    //Entra aqui en reporte
+                                    cancelAll(SESSION_DELETED_FAILED);
+                                }
+                                break;
+
+                            case VIEW_DIALOG_PARKEN:
+                                cancelAll(estatus);
+                                break;
+
+                            case VIEW_PAYING:
+                                cancelAll(estatus);
+                                break;
+
+                            case VIEW_PAYING_CANCELED:
+                                cancelAll(estatus);
+                                break;
+
+                            case VIEW_NO_PAYING:
+                                cancelAll(NO_PAYING);
+                                break;
+
+                            default:
+                                //Algo salió mal
+                                dialogFailed().show();
+                                break;
+
+                        }
                         return;
                     }
                 });
@@ -4982,9 +5270,9 @@ case "Maps":
             //----------------------------------------------------------------
 
             //Cerrar sockets -------------------------------------------------
-            mSocket.disconnect();
-            mSocket.off(Jeison.SOCKET_FIND_PARKEN_SPACE, parkenSpace);
-            mSocket.off("chat message", parkenSpace);
+            //mSocket.disconnect();
+            //mSocket.off(Jeison.SOCKET_FIND_PARKEN_SPACE, parkenSpace);
+            //mSocket.off("chat message", parkenSpace);
             //----------------------------------------------------------------
         }
         if(mReceiver != null)
@@ -5094,7 +5382,7 @@ case "Maps":
 
                             Log.d("OnNewIntentGeoOnTheWay", "TRUE");
 
-                            if (STATE_ON_THE_WAY == null) {
+                            //if (STATE_ON_THE_WAY == null) {
                                 switch (intent.getStringExtra("ActivityStatus")) {
                                     case MESSAGE_EP_BOOKED:
 
@@ -5154,7 +5442,7 @@ case "Maps":
 
                                 }
                                 STATE_ON_THE_WAY = "TRUE";
-                            }
+                            //}
                         }
                         break;
 
@@ -5202,6 +5490,20 @@ case "Maps":
 
                             switch (intent.getStringExtra("ActivityStatus")) {
 
+                                case MESSAGE_PAY_LOADING_FAILED:
+
+                                    //No se puede establecer la vista pagando
+                                    try {
+                                        vista = VIEW_PAYING;
+                                        crearReporte(session.infoId(),"PENDIENTE","PAGO", "No se estableció la vista pagando en el servidor" , idEspacioParken, idZonaParken);
+
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+
+
+                                    break;
+
                                 case MESSAGE_PAY_FAILED:
 
                                     /*Eliminamos la sesión Parken y
@@ -5212,8 +5514,7 @@ case "Maps":
 
                                     try {
 
-                                        dialogPayTimeOut().show();
-                                        vista = VIEW_DIALOG_PARKEN;
+                                        vista = VIEW_NO_PAYING;
                                         crearReporte(session.infoId(),"PENDIENTE","PAGO", "Automovilista no finalizó el pago en el tiempo establecido" , idEspacioParken, idZonaParken);
 
                                     } catch (JSONException e) {
@@ -5238,25 +5539,35 @@ case "Maps":
                                         dialogParken = null;
                                     }
 
+                                    Notificacion.lanzar(this, NOTIFICATION_PAYING_CANCEL, "DEFAULT", null);
+
                                     try {
                                         //vista = VIEW_DIALOG_PARKEN;
+                                        vista = VIEW_PAYING_CANCELED;
                                         crearReporte(session.infoId(),"PENDIENTE","PAGO", "Automovilista canceló su pago" , idEspacioParken, idZonaParken);
 
                                     } catch (JSONException e) {
                                         e.printStackTrace();
                                     }
 
-                                    Notificacion.lanzar(this, NOTIFICATION_PAYING_CANCEL, "DEFAULT", null);
+
 
 
                                     break;
 
                                 case MESSAGE_PAY_SUCCESS:
 
-                                    timerTask.cancel(true);
+                                    if(timerTask != null){
+                                        timerTask.cancel(true);
+                                        timerTask = null;
+                                    }
+
                                     if(intent.getBooleanExtra("clearPausa",true)){
                                         minPausa=0;
                                         segPausa = 59;
+                                        Notificacion.lanzar(this, NOTIFICATION_SESSION_PARKEN, "DEFAULT", "iniciado&" + String.valueOf(fechaPago.get(Calendar.HOUR_OF_DAY)) + ":" + String.valueOf(fechaPago.get(Calendar.MINUTE)) + " hrs.");
+                                    }else{
+                                        Notificacion.lanzar(this, NOTIFICATION_SESSION_PARKEN, "DEFAULT", "renovado&" + String.valueOf(fechaPago.get(Calendar.HOUR_OF_DAY)) + ":" + String.valueOf(fechaPago.get(Calendar.MINUTE)) + " hrs.");
                                     }
                                     tiempoEnMinutos = intent.getIntExtra("TiempoEnMinutos", 0);
                                     idSesionParken = intent.getStringExtra("idSesionParken");
@@ -5544,6 +5855,10 @@ case "Maps":
 
         final LayoutInflater inflater = activityParken.getLayoutInflater();
 
+        if(dialogConfirmCancelBooking != null){
+            dialogConfirmCancelBooking.dismiss();
+            dialogConfirmCancelBooking = null;
+        }
 
         View v = inflater.inflate(R.layout.alertdialog_parken, null);
         //clearGeofence();
@@ -5562,7 +5877,10 @@ case "Maps":
                         // Crear Cuenta...
                         //dismiss();
                         //Cancelamos el timer
-                        timerTask.cancel(true);
+                        if(timerTask != null) {
+                            timerTask.cancel(true);
+                            timerTask = null;
+                        }
 
                         Intent payParken = new Intent(ParkenActivity.this, SesionParkenActivity.class);
                         payParken.putExtra("Activity", SesionParkenActivity.ACTIVITY_PARKEN);
@@ -5578,9 +5896,6 @@ case "Maps":
                         dialogParken.dismiss();
                         dialogParken = null;
 
-                        //dialog.dismiss();
-                        //return;
-
                     }
                 }
         );
@@ -5590,7 +5905,16 @@ case "Maps":
                     @Override
                     public void onClick(View v) {
 
-                        timerTask.cancel(true);
+                        dialogParken.dismiss();
+                        dialogParken = null;
+
+                        showProgress(true);
+
+                        if(timerTask != null){
+                            timerTask.cancel(true);
+                            timerTask = null;
+                        }
+
                         vista = VIEW_ON_THE_WAY;
 
                         try {
@@ -5599,8 +5923,7 @@ case "Maps":
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
-                        //builder.create().dismiss();
-                        //dialog.dismiss();
+
                         return;
                     }
                 }
@@ -5688,13 +6011,62 @@ case "Maps":
     }
 
 
+    public AlertDialog dialogNoPayLoading() {
+
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+
+        builder.setTitle("Error 301")
+                .setMessage("No es posible realizar el pago en este momento. Por favor desaloja el espacio Parken para evitar una sanción o registra tu pago con un supervisor.")
+                .setPositiveButton("OK",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        })
+                .setOnDismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialog) {
+                        dialog.dismiss();
+                    }
+                });
+
+        return builder.create();
+    }
+
+    public AlertDialog dialogPayCancelled() {
+
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+
+        builder.setTitle("Pago cancelado")
+                .setMessage("Por favor desaloja el espacio Parken para evitar una sanción.")
+                .setPositiveButton("OK",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        })
+                .setOnDismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialog) {
+                        dialog.dismiss();
+                    }
+                });
+
+        return builder.create();
+    }
+
+
     public AlertDialog dialogPayTimeOut() {
 
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
 
-        builder.setTitle("Tiempo excedido")
-                .setMessage("No efectuaste tu pago a tiempo. Por favor desaloja el espacio Parken.")
+        builder.setTitle("Error con el pago")
+                .setMessage("No efectuaste tu pago a tiempo. Por favor desaloja el espacio Parken para evitar una sanción.")
                 .setPositiveButton("OK",
                         new DialogInterface.OnClickListener() {
                             @Override
@@ -5723,7 +6095,7 @@ case "Maps":
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
         builder.setTitle("Pago exitoso")
-                .setMessage("En unos minutos un supervisor retirará el inmovilizador de tu vehículo.")
+                .setMessage("En unos minutos un supervisor retirará el inmovilizador de tu vehículo. Es necesario que estés presente para desalojar el espacio Parken inmediatamente.")
                 .setPositiveButton("OK",
                         new DialogInterface.OnClickListener() {
                             @Override
@@ -5901,12 +6273,14 @@ case "Maps":
 
 
     public AlertDialog dialogEPTimeOut() {
+        //Alerta para informar que no se logro llegar al espacio reservado
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        //No llegaste a tiempo al espacio Parken reservado. El espacio se ha liberado.\nSolicita de nuevo otro espacio Parken.
 
 
         builder.setTitle("Tiempo excedido")
-                .setMessage("Se ha liberado el espacio Parken. Intenta de nuevo.")
+                .setMessage("No llegaste a tiempo al espacio Parken reservado. Solicita de nuevo otro espacio Parken.")
                 .setPositiveButton("OK",
                         new DialogInterface.OnClickListener() {
                             @Override
@@ -5930,6 +6304,31 @@ case "Maps":
 
         return builder.create();
     }
+
+    public AlertDialog dialogDialogParkenOut() {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        String msg = "No recibimos tu respuesta a tiempo.\nDesaloja el espacio Parken o serás acreedor a una sanción.";
+
+        builder.setTitle("Tiempo excedido")
+                .setMessage(msg)
+                .setPositiveButton("OK",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        })
+                .setOnDismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialog) {
+                        dialogDialogParkenOut = null;
+                    }
+                });
+
+        return builder.create();
+    }
+
 
     public AlertDialog dialogBookedDone() {
         final AlertDialog.Builder builder = new AlertDialog.Builder(activityParken);
@@ -5958,6 +6357,69 @@ case "Maps":
                                 dialog.cancel();
                             }
                         });
+        return builder.create();
+    }
+
+    public AlertDialog dialogFailedSolicitarOtro(String time) {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(activityParken);
+
+        builder.setTitle("Error " + time)
+                .setMessage("No es posible solicitar otro espacio Parken en este momento. Intenta más tarde.")
+                .setPositiveButton("OK",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        })
+                .setOnDismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialog) {
+                        dialogFailedSolicitarOtro = null;
+                    }
+                });
+        return builder.create();
+    }
+
+    public AlertDialog dialogSuccessCancelEPBooked() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(activityParken);
+
+        builder.setTitle("Solicitud cancelada")
+                .setMessage("Se canceló la solicitud exitosamente.")
+                .setPositiveButton("OK",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        })
+                .setOnDismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialog) {
+                        dialogSuccessCancelEPBooked = null;
+                    }
+                });
+        return builder.create();
+    }
+
+    public AlertDialog dialogFailedCancelEPBooked() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(activityParken);
+
+        builder.setTitle("Error")
+                .setMessage("No es posible cancelar la solicitud del espacio Parken reservado en estos momentos. Intenta más tarde.")
+                .setPositiveButton("OK",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        })
+                .setOnDismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialog) {
+                        dialogFailedCancelEPBooked = null;
+                    }
+                });
         return builder.create();
     }
 
@@ -6166,27 +6628,35 @@ case "Maps":
         sendBroadcast(closeIntent);
         AlertDialog.Builder builder = new AlertDialog.Builder(activityParken);
         builder.setTitle("Cancelar")
-                .setMessage("¿Deseas cancelar la solicitud del espacio Parken? Se liberará el espacio.")
+                .setMessage("¿Deseas cancelar la solicitud del espacio Parken que se ha reservado para ti? Si presionas OK se liberará el espacio.")
                 .setNegativeButton("Cancelar",new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
-                        dialog.cancel();
+                        dialog.dismiss();
                     }
                 })
                 .setPositiveButton("OK",
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
+                                showProgress(true);
                                 cancelarEspacioParkenReservado(CANCEL);
                             }
-                        });
+                        })
+        .setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                dialogConfirmCancelBooking = null;
+            }
+        })
+        ;
 
         return builder.create();
     }
 
     public AlertDialog dialogFinishParken() {
         AlertDialog.Builder builder = new AlertDialog.Builder(activityParken);
-        builder.setTitle("Cancelar sesión")
-                .setMessage("¿Deseas finalizar la sesión Parken? Presiona OK únicamente cuando estes listo para mover tu vehículo. De lo contrario serás acreedor a una sanción")
+        builder.setTitle("¿Finalizar sesión Parken?")
+                .setMessage("Presiona OK únicamente cuando estés listo para mover tu vehículo. De lo contrario podrás ser acreedor a una sanción.")
                 .setNegativeButton("Cancelar",new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
                         dialog.cancel();
@@ -6548,6 +7018,11 @@ case "Maps":
                 String msj3 = "";
                 msj1 = "Tiempo restante: ";
                 txtRelojito1.setVisibility(View.VISIBLE);
+                String minutitos = SesionParkenActivity.obtenerTiempoString((long) values[1]);
+                txtRelojito1.setText(msj1 + minutitos);
+//Iniciamos el ActivityRecognition
+                activateActivityRecognition();
+                /*
                 if(values[0]< 10){
                     txtRelojito1.setText(msj1 + values[1] + ":" + "0"+values[0]);
                 }else {
@@ -6557,6 +7032,7 @@ case "Maps":
                 if(values[1]==0) {
                     txtRelojito2.setBackgroundColor(Color.argb(255, 254, 67, 54));
                 }
+                */
                 //txtNotaEParken.setText(msj1 + min + ":" + seg + msj2 + msj3);
                 //txtNotaEParken.setText("Tiempo restante: " + SesionParkenActivity.obtenerTiempoString((long) values[1]));
                 //txtNotaEParken.setText(msj1 + min + ":" + seg + msj2 + msj3);
@@ -6574,16 +7050,18 @@ case "Maps":
                 notificacionTime = notiTime;
 
                 if (noti) {
-
+                    String m;
+                    if(values[1] == 1) m = " minuto.";
+                    else m = " minutos.";
                     //if(Integer.parseInt(notiTime) > values[2] && values[1] == values[2]){
                     if (Integer.parseInt(notiTime) > values[2] && !notificationSPSent) {
                         //notificationSPFinished(values[1]);
-                        Notificacion.lanzar(getApplicationContext(), NOTIFICATION_ALMOST_FINISH_PS,"MAX", "Finalizando sesión Parken&Tu sesión finaliza en menos de " + String.valueOf(values[1] + 1) + "minutos.");
+                        Notificacion.lanzar(getApplicationContext(), NOTIFICATION_ALMOST_FINISH_PS,"MAX", "Finalizando sesión Parken&Tu sesión finaliza en menos de " + String.valueOf(values[1]) + m);
                         notificationSPSent = true;
                     } else {
                         if (Integer.parseInt(notiTime) == values[1] && values[0] == 0 && !notificationSPSent) {
                             //notificationSPFinished(values[1]);
-                            Notificacion.lanzar(getApplicationContext(), NOTIFICATION_ALMOST_FINISH_PS ,"MAX", "Finalizando sesión Parken&Tu sesión finaliza en menos de " + String.valueOf(values[1] + 1) + "minutos.");
+                            Notificacion.lanzar(getApplicationContext(), NOTIFICATION_ALMOST_FINISH_PS ,"MAX", "Finalizando sesión Parken&Tu sesión finaliza en menos de " + String.valueOf(values[1]) + m);
                             notificationSPSent = true;
                         }
                     }
@@ -6611,15 +7089,11 @@ case "Maps":
                             timerCheckMovementTask.cancel(true);
                             timerCheckMovementTask = null;
                         }
-
-                        //Si es nu
-
+                        //Si es null
                         timerCheckMovementTask = new TimerCheckMovementTask();
-
                         //Obtener suma de minutos y segundos
                         int minTTP = values[1] + minutoTimerTolerancePlus + (values[0] + segundoTimerTolerancePlus)/60;
                         int segTTP = (values[0] + segundoTimerTolerancePlus)%60;
-
                         //Ejecutamos el nuevo TimerCheck que se mantendrá sensando all el tiempo
                         //Si alguna variable se activa
                         //dialogEmpty("Min: " + String.valueOf(minTTP) + " Seg: " + String.valueOf(segTTP)).show();
@@ -6650,12 +7124,7 @@ case "Maps":
                         }
                     }
 
-
-
                 }
-
-
-
             }
 
             if(vista.equals(VIEW_DIALOG_PARKEN)) {
@@ -6716,8 +7185,10 @@ case "Maps":
 
         @Override
         protected void onPostExecute(final Boolean success) {
+
+            //Finalizó el tiempo de espera para las diferentes vistas de la app
             Log.d("TimerEnd", "TRUE");
-            //forceCloseDialog();
+
             if(dialogParken != null){
                 Log.d("TimerEnd", "!=Null");
              //   dialogParken.cancel();
@@ -6725,8 +7196,12 @@ case "Maps":
 
             //cancelAllNotifications();
 
+            //Si la vista es Espacio Parken reservado
+            //No se llegó al espacio que se reservo, entonces se notificará
+            //al usuario que debe desalojar
             if(vista.equals(VIEW_PARKEN_SPACE_BOOKED)){
 
+                //Se muestra la alerta indicando que no se llegó al lugar
                 if(dialogEPTimeOut != null){
                     if(!dialogEPTimeOut.isShowing()){
                         dialogEPTimeOut.show();
@@ -6735,17 +7210,28 @@ case "Maps":
                 }else {
                     dialogEPTimeOut = dialogEPTimeOut();
                     dialogEPTimeOut.show();
-
                 }
 
+                //Se envía una notificación informado también al automovilista
                 Notificacion.lanzar(getApplicationContext(), NOTIFICATION_EP_BOOKED_OUT, "DEFAULT", null);
 
 
+                //Se elimina la sesión que se ha creado en el servidor,
                 if(idSesionParken !=null){
-
+                    //Se debe checar en este caso el estado de la eliminación
+                    showProgress(true);
                     eliminarSesionParken(idSesionParken, TIMEOUT);
-
                 }
+
+                //Eliminamos la petición de la ruta
+                if(downloadTask != null){
+                    downloadTask.cancel(true);
+                    downloadTask = null;
+                }
+
+                //Finalmente se regresa a la vista Parken
+                //Se regresa a la vista hasta que se obtiene la respuesta al eliminar la sesión
+
             }
 
             if(vista.equals(VIEW_PARKEN_SESSION_ACTIVE)){
@@ -6779,21 +7265,23 @@ case "Maps":
             }
 
             if(vista.equals(VIEW_DIALOG_PARKEN)){
-                //Cerramos el dialogParken
+                //Si terminó el tiempo y no se recibió respuesta de pagar o solicitar otro,
+                //Entonces, procedemos a
+
+                //Cerrar el dialogParken
                 dialogParken.dismiss();
                 dialogParken = null;
-                //eliminamos la sesion y creamos el reporte
 
-                Notificacion.lanzar(getApplicationContext(), NOTIFICATION_PARKEN_OUT, "DEFAULT", null);
+                //Se crea un reporte, indicando que no se recibio la respuesta a timpo
+                //Se crea un reporte porque el sistema detectó que el usuario esta en el espacio Parken
+
                 try {
+                    showProgress(true);
                     crearReporte(session.infoId(),"PENDIENTE","TIMEOUT", "" , idEspacioParken, idZonaParken);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }
-
-
-
 
         }
 
@@ -6966,12 +7454,9 @@ case "Maps":
             session.setEntering(false);
             session.setDriving(false);
 
-            deactivateActivityRecognition();
-
             moveIn = false;
 
             cancelNotificationConfirmEndSP();
-
 
             if(dialogConfirmEndSP != null){
                 dialogConfirmEndSP.dismiss();
@@ -6987,6 +7472,9 @@ case "Maps":
                     // No importa se presionó el botón FINALIZAR puesto que al hacer esto,
                     //unicamente se modifico el estatus de la sesión a PROCESANDO o REEMBOLSO
                     finalizarSesionParken(REPORTADA, "ENDOFTIME", null);
+
+                    //SOLO SE VA A DESACTIVAR CUANDO LA SESIÑON TERMINA
+                    deactivateActivityRecognition();
 
                 }else{ //Si no ha finalizado el tiempo y no se ha registrado movimiento
                     if(CONFIRMATION){ //Y se presionó el botón FINALIZAR
@@ -7165,13 +7653,10 @@ case "Maps":
 
             timerCheckMovementTask = new TimerCheckMovementTask();
             //timerCheckMovementTask.execute(1, 59, 1); //(0 minutos, 59 segundos, 1: "move")
-            timerCheckMovementTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,0,59,1);
+            timerCheckMovementTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,0, 59, MOVIMIENTO);
 
         }
-
-
-
-        }
+    }
 
 
 

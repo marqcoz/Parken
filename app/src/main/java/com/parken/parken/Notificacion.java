@@ -223,7 +223,7 @@ public class Notificacion extends Notification {
                 cerrar(c, NOTIFICATION_EP_BOOKED);
 
                 title = "Tiempo excedido";
-                msg = "No alcanzaste a llegar al espacio Parken.\nSolicita de nuevo.";
+                msg = "No llegaste a tiempo al espacio Parken reservado.\nSolicita de nuevo otro espacio Parken.";
 
 
                 notificacion
@@ -243,7 +243,7 @@ public class Notificacion extends Notification {
                 cerrar(c, NOTIFICATION_EP_BOOKED);
 
                 title = "Tiempo excedido";
-                msg = "No recibimos tu respuesta a tiempo.\n Desaloja el espacio Parken o serás acreedor a una sanción.";
+                msg = "No recibimos tu respuesta a tiempo.\nDesaloja el espacio Parken o serás acreedor a una sanción.";
 
 
                 notificacion

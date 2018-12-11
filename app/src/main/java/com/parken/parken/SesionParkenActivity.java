@@ -8,10 +8,12 @@ import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
@@ -227,6 +229,7 @@ public class SesionParkenActivity extends AppCompatActivity {
 
 
         cargarDatos();
+
         if(estatus == ParkenActivity.LOAD){
             establecerVistaPagando(session.infoId(), idSesionParken);
         }
@@ -427,7 +430,6 @@ public class SesionParkenActivity extends AppCompatActivity {
                 if(origin.equals(ACTIVITY_PARKEN)){
                     dialogCancelPago().show();
                 }else {
-
                     finish();
                 }
 
@@ -593,18 +595,14 @@ public class SesionParkenActivity extends AppCompatActivity {
                         showProgress(false);
                         try {
                             if(response.getString("success").equals("1")){
-
                                 Notificacion.lanzar(getApplicationContext(), ParkenActivity.NOTIFICATION_PAYING, "DEFAULT", null);
-
                             } else{
-                                dialogError().show();
-
+                                noPayLoading();
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
-                            dialogError().show();
+                            noPayLoading();
                         }
-
                         return;
                     }
                 },
@@ -612,10 +610,8 @@ public class SesionParkenActivity extends AppCompatActivity {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-
                         showProgress(false);
-                        dialogError().show();
-
+                        noPayLoading();
                         return;
                     }
                 });
@@ -673,6 +669,16 @@ public class SesionParkenActivity extends AppCompatActivity {
 
         final HashMap<String, String> parametros = new HashMap();
 
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        boolean noti = pref.getBoolean("notify_on", true);
+        String notiTime = pref.getString("notify_time", "5");
+
+        String notificacion;
+        if (noti){
+            notificacion = notiTime;
+        }else{
+            notificacion = "0";
+        }
         parametros.put("idAutomovilista", automovilista);
         parametros.put("idSesionParken", idSesionParken);
         parametros.put("FechaFinal", fechaFinal);
@@ -680,6 +686,7 @@ public class SesionParkenActivity extends AppCompatActivity {
         parametros.put("Tiempo", tiempo);
         parametros.put("idVehiculo", idVehiculo);
         parametros.put("puntosParken", puntosParken);
+        parametros.put("notificacion", notificacion);
         parametros.put("opc", opc);
 
 
@@ -1047,7 +1054,7 @@ public class SesionParkenActivity extends AppCompatActivity {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Cancelar Pago")
-                .setMessage("¿Deseas cancelar el pago de tu sesión Parken? Tu espacio asignado se liberará.")
+                .setMessage("¿Deseas cancelar el pago de la sesión Parken? Tu espacio asignado se liberará.")
                 .setNegativeButton("CANCELAR", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -1091,14 +1098,20 @@ public class SesionParkenActivity extends AppCompatActivity {
     public AlertDialog dialogError() {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("ERROR")
-                //.setMessage("El vehículo seleccionado se encuentra en una sesión Parken. Selecciona otro.")
+        builder.setTitle("Error 301")
+                .setMessage("No es posible realizar el pago en este momento. Por favor desaloja el espacio Parken o serás acreedor a una sanción.")
                 .setPositiveButton("OK",
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
                             }
-                        });
+                        })
+                .setOnDismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialog) {
+                    }
+                });
 
         return builder.create();
     }
@@ -1126,7 +1139,7 @@ public class SesionParkenActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
         builder.setTitle("¡Atención!")
-                .setMessage("Tienes " + obtenerTiempoString((long)minMinPago) + " para efectuar su pago, de lo contrario deberá liberar el espacio Parken o será acreedor a una sanción.")
+                .setMessage("Tienes " + obtenerTiempoString((long)minMinPago) + " para efectuar tu pago, de lo contrario deberás liberar el espacio Parken para evitar una sanción.")
                 .setPositiveButton("OK",
                         new DialogInterface.OnClickListener() {
                             @Override
@@ -1676,7 +1689,13 @@ public class SesionParkenActivity extends AppCompatActivity {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            txtTimer.setText("Tiene 5:00 minutos para pagar");
+            String tim;
+            if(minMinPago > 1){
+                tim = String.valueOf(minMinPago)+ " minutos";
+            }else{
+                tim = String.valueOf(minMinPago)+ " minuto";
+            }
+            txtTimer.setText("Tienes "+ tim + " minutos para pagar");
 
         }
 
@@ -1685,7 +1704,7 @@ public class SesionParkenActivity extends AppCompatActivity {
             super.onProgressUpdate(values);
             String seg;
 
-            if(values[1] == 4 && values[0] == 45 && _dialog!=null){
+            if(values[1] == minMinPago-1 && values[0] == 45 && _dialog!=null){
                 _dialog.cancel();
             }
             if (values[0] >= 0 && values[0] < 10) {
@@ -1701,7 +1720,7 @@ public class SesionParkenActivity extends AppCompatActivity {
             } else {
                 msj2 = " minutos para pagar";
             }
-            String msj1 = "Tiene ";
+            String msj1 = "Tienes ";
 
 
             //que solo pase cuando el tiempo seleccionado son 5 minutos menos
@@ -1792,6 +1811,17 @@ public class SesionParkenActivity extends AppCompatActivity {
         dialogIntent.putExtra("Activity", ParkenActivity.ACTIVITY_SESION_PARKEN);
         dialogIntent.putExtra("ActivityStatus", ParkenActivity.MESSAGE_PAY_FAILED);
         Log.d("Activity", ParkenActivity.MESSAGE_PAY_FAILED);
+        startActivity(dialogIntent);
+
+    }
+
+    private void noPayLoading() {
+
+        finish();
+        Intent dialogIntent = new Intent(getApplicationContext(), ParkenActivity.class);
+        dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        dialogIntent.putExtra("Activity", ParkenActivity.ACTIVITY_SESION_PARKEN);
+        dialogIntent.putExtra("ActivityStatus", ParkenActivity.MESSAGE_PAY_LOADING_FAILED);
         startActivity(dialogIntent);
 
     }

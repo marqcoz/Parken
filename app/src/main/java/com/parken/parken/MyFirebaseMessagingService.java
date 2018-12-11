@@ -54,6 +54,11 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                         Notificacion.lanzar(this, idNoti, "DEFAULT", notificacion);
                         break;
 
+                    case ParkenActivity.NOTIFICATION_ALMOST_FINISH_PS:
+                        String info;
+                        info = data.getString("title")+"&"+data.getString("msg");
+                        Notificacion.lanzar(getApplicationContext(), idNoti,"MAX", info);
+
                         default:
                             break;
                 }
